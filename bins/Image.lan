@@ -39,6 +39,74 @@ class Image
         return getImageHeight(this.Bitmap);
     endfunction
     
+    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+        drawImageLine(this.Bitmap,X1,Y1,X2,Y2,0,0,0,1);
+    endfunction
+    
+    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
+        drawImageLine(this.Bitmap,X1,Y1,X2,Y2,pixel.R,pixel.G,pixel.B,1);
+    endfunction
+    
+    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
+        drawImageLine(this.Bitmap,X1,Y1,X2,Y2,R,G,B,1);
+    endfunction
+    
+    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
+        drawImageLine(this.Bitmap,X1,Y1,X2,Y2,pixel.R,pixel.G,pixel.B,T);
+    endfunction
+    
+    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
+        drawImageLine(this.Bitmap,X1,Y1,X2,Y2,R,G,B,T);
+    endfunction
+    
+    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+        drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, 0,0,0,1);
+    endfunction
+    
+    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
+        drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel.R,pixel.G,pixel.B,1);
+    endfunction
+    
+    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
+        drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, R, G, B,1);
+    endfunction
+    
+    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
+        drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel.R,pixel.G,pixel.B,T);
+    endfunction
+    
+    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
+        drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, R, G, B,T);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, 0, 0, 0, 1, 0 ,0 ,0);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, 1, pixel1.R, pixel1.G, pixel1.B);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, 1, R1 ,G1 ,B1);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, T, R1 ,G1 ,B1);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer, pixel2 as Pixel)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
+    endfunction
+    
+    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
+        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, T, R2 ,G2 ,B2);
+    endfunction
+    
     function __CheckCoords(X, Y)
         if(X < 0 | X >= this.GetWidth() | Y < 0 | Y > this.GetHeight())
             raise "Coordinates out of bounds!";

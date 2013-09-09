@@ -890,6 +890,107 @@ namespace Lang.language
                 return new LangNumber(0);
             }
             #endregion
+            #region drawImageFilledRectangle
+            else if (stat.name == "drawImageFilledRectangle")
+            {
+                checkParameterNumber("drawImageFilledRectangle", 12, stat);
+                LangObject _img, _X1, _Y1, _X2, _Y2, _R, _G, _B, _T, _R2, _G2, _B2;
+                _img = decider((Node)stat.parameters[0]);
+                _X1 = decider((Node)stat.parameters[1]);
+                _Y1 = decider((Node)stat.parameters[2]);
+                _X2 = decider((Node)stat.parameters[3]);
+                _Y2 = decider((Node)stat.parameters[4]);
+                _R = decider((Node)stat.parameters[5]);
+                _G = decider((Node)stat.parameters[6]);
+                _B = decider((Node)stat.parameters[7]);
+                _T = decider((Node)stat.parameters[8]);
+                _R2 = decider((Node)stat.parameters[9]);
+                _G2 = decider((Node)stat.parameters[10]);
+                _B2 = decider((Node)stat.parameters[11]);
+                #region TypeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_X1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                }
+                if (_Y1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                }
+                if (_X2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                }
+                if (_Y2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                }
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                if (_T.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_T.objectType) + "' Found");
+                }
+                if (_R2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R2.objectType) + "' Found");
+                }
+                if (_G2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G2.objectType) + "' Found");
+                }
+                if (_B2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B2.objectType) + "' Found");
+                }
+                #endregion
+                LangImage img = (LangImage)_img;
+                LangNumber X1 = (LangNumber)_X1,
+                           Y1 = (LangNumber)_Y1,
+                           X2 = (LangNumber)_X2,
+                           Y2 = (LangNumber)_Y2,
+                           R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B,
+                           T = (LangNumber)_T,
+                           R2 = (LangNumber)_R2,
+                           G2 = (LangNumber)_G2,
+                           B2 = (LangNumber)_B2;
+                var graphics = Graphics.FromImage(img.imageValue);
+                Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
+                Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
+                Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                Rectangle rect = new Rectangle(start, size);
+                graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue, (int)G2.numberValue, (int)B2.numberValue)), rect);
+                graphics.DrawRectangle(pen, rect);
+                return new LangNumber(0);
+            }
+            #endregion
             #endregion
             #region getTypeName
             else if (stat.name == "getTypeName")
