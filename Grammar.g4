@@ -1,4 +1,4 @@
-grammar Grammar;
+grammar LangGrammar;
 
 /*
  * Parser Rules
@@ -10,6 +10,7 @@ grammar Grammar;
 
  statement
 	:	simple_stat SEMICOLON
+	|	compund_stat
 	;
 
  compound_stat
@@ -30,7 +31,7 @@ grammar Grammar;
 	;
 
  var_list
-	:	(ID (COMMA ID)* SEMICOLON)?
+	:	ID (COMMA ID)* SEMICOLON
 	;
 
  if_stat
@@ -80,8 +81,12 @@ grammar Grammar;
  simple_stat
 	:	bind_stat
 	|	print_stat
+	|	scan_stat
 	|	break_stat
 	|	cont_stat
+	|	import_stat
+	|	func_call_stat
+	|	stop_stat
 	;
 
  import_stat
@@ -137,7 +142,12 @@ grammar Grammar;
 	;
 
  pow_expr
-	:	factor (POW pow_expr)?
+	:	dot_expr (POW pow_expr)?
+	;
+
+ dot_expr
+	:	ID(L_BRACK expression R_BRACK | DOT dot_expr)*
+	|	factor
 	;
 
  factor
@@ -149,7 +159,7 @@ grammar Grammar;
 	
  id
 	:	simple_stat
-	|	ID (L_BRACK expression R_BRACK)* (DOT ID (L_BRACK expression R_BRACK)*)*
+	|	ID
 	;
 
 /*
