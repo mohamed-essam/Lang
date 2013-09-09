@@ -8,16 +8,16 @@ class Pair
     endfunction
     
     function Pair(_first, _second)
-        let first = _first;
-        let second = _second;
+        let this.first = _first;
+        let this.second = _second;
     endfunction
 
     function __operator_smaller(o)
-        if(first < o.first)
+        if(this.first < o.first)
             return 1;
-        elif(first > o.first)
+        elif(this.first > o.first)
             return 0;
-        elif(second < o.second)
+        elif(this.second < o.second)
             return 1;
         else
             return 0;
@@ -25,7 +25,7 @@ class Pair
     endfunction
 
     function __operator_plus(o)
-        return new Pair(first + o.first, second + o.second);
+        return new Pair(this.first + o.first, this.second + o.second);
     endfunction
 
     function __operator_minus(o)
