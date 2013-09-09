@@ -67,8 +67,6 @@ namespace Lang
 
         private void Run()
         {
-            RunButton.Enabled = false;
-            StopButton.Enabled = true;
             curCode = codeRTB.Text;
             curIn = InputRTB.Text;
             outputRTB.Text = "";
@@ -81,6 +79,8 @@ namespace Lang
                 MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            RunButton.Enabled = false;
+            StopButton.Enabled = true;
             console.processInput(curIn);
             runnerThread = new Thread(new ThreadStart(langManager.run), 33554432);
             runnerThread.Start();
@@ -498,7 +498,7 @@ namespace Lang
                     foreach(StackTraceEntry entry in langManager.interpreter.StackTrace){
                         StackTrace = "\nIn file " + entry.FileName + ": Line " + entry.LineNumber + ": Function '" + entry.FunctionName + "'" + StackTrace;
                     }
-                    langManager.lastException = "In file " + langManager.lastErrorToken.file + ": " + langManager.lastException;
+                    //langManager.lastException = "In file " + langManager.lastErrorToken.file + ": " + langManager.lastException;
                     MessageBox.Show(langManager.lastException + StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                     if (langManager.lastErrorToken != null)
                     {
