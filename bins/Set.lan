@@ -1,0 +1,121 @@
+import Array;
+
+class __SET_Node
+    _data;
+    _left, _right;
+    exists;
+
+    function Node ()
+    endfunction
+
+endclass
+
+class Set
+    root , Size;
+    ArrayRep;
+
+    function Set ()
+        let root = new __SET_Node();
+        let root.exists = 0;
+        let Size = 0;
+    endfunction
+
+    function __LRsetup(node)
+        let node._left = new __SET_Node();
+        let node._left.exists = 0;
+        let node._right = new __SET_Node();
+        let node._right.exists = 0;
+        return node;
+    endfunction
+
+    function putInLocation(curNode, object)
+        if(object > curNode._data)
+            if(curNode._right.exists == 0)
+                let curNode._right._data = object;
+                let curNode._right = this.__LRsetup(curNode._right);
+                let curNode._right.exists = 1;
+                return curNode;
+            else
+                let curNode._right = this.putInLocation(curNode._right, object);
+                return curNode;
+            endif
+        elif(object < curNode._data)
+            if(curNode._left.exists == 0)
+                let curNode._left._data = object;
+                let curNode._left = this.__LRsetup(curNode._left);
+                let curNode._left.exists = 1;
+                return curNode;
+            else
+                let curNode._left = this.putInLocation(curNode._left, object);
+                return curNode;
+            endif
+        else
+            return curNode;
+        endif
+    endfunction
+
+    function Add(object)
+        if(root.exists == 0)
+            let root.exists = 1;
+            let root._data = object;
+            let root = this.__LRsetup(root);
+            let Size = Size + 1;
+        else
+            let root = this.putInLocation(root, object);
+            let Size = Size + 1;
+        endif
+    endfunction
+
+    function Top()
+        if(root.exists == 0)
+            return 0;
+        else
+            let curNode = root;
+            while(curNode._left.exists == 1)
+                let curNode = curNode._left;
+            endloop
+            return curNode._data;
+        endif
+    endfunction
+
+    function _remove(CurNode)
+        if(CurNode._left.exists == 0)
+            if(CurNode._right.exists == 0)
+                let CurNode.exists = 0;
+                return CurNode;
+            else
+                return CurNode._right;
+            endif
+        else
+            let CurNode._left = this._remove(CurNode._left);
+            return CurNode;
+        endif
+    endfunction
+
+    function Pop()
+        if(root.exists == 0)
+            raise "Cannot Pop(), Set is empty!";
+        else
+            let root = this._remove(root);
+            let Size = Size - 1;
+        endif
+    endfunction
+    
+    function __traverse (node)
+        if (node ._left .exists)
+            this.__traverse (node ._left);
+        endif
+        this .ArrayRep .Add (node ._data);
+        if (node ._right .exists)
+            this.__traverse (node ._right);
+        endif
+    endfunction
+    
+    function ToArray ()
+        let this .ArrayRep = new Array ();
+        if (root .exists)
+            this .__traverse (root);
+        endif
+        return this .ArrayRep;
+    endfunction
+endclass

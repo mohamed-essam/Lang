@@ -1,0 +1,38 @@
+class __String
+    
+    function __String()
+        # Nothing to do here
+    endfunction
+
+    function Substring(str as string, start as integer, length as integer)
+        let output = "";
+        for(let i = start; i < start + length; let i = i+1)
+            let output = output + str[i];
+        endloop
+        return output;
+    endfunction
+
+    function Length(str as string)
+        return strlen(str);
+    endfunction
+    
+    function Find(str as string, search as string)
+        for(let i = 0; i < this.Length(search); let i = i + 1)
+            let tr = 1;
+            for(let j = 0; j < this.Length(str); let j = j + 1)
+                if(search[i+j] != str[j])
+                    let tr = 0;
+                    break;
+                endif
+            endloop
+            if(tr)
+                return i;
+            endif
+        endloop
+        return -1;
+    endfunction
+    
+    
+endclass
+
+let String = new __String();

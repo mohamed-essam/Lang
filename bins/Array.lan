@@ -1,0 +1,83 @@
+class Array
+    ArrayValue, Size;
+
+    function Array()
+        let this.ArrayValue = map();
+        let this.Size = 0;
+    endfunction
+
+    function Array(N as integer)
+        let this.ArrayValue = map();
+        let this.Size = N;
+    endfunction
+
+    function Array(N as integer, object)
+        let this.ArrayValue = map();
+        let this.Size = N;
+        for(let  i = 0; i < N; let i = i+1)
+            let this.ArrayValue[i] = object;
+        endloop
+    endfunction
+
+    function Array(mp)
+        let this.ArrayValue = map();
+        let this.Size = count(mp);
+        for(let i = 0; i < Size; let i = i + 1)
+            let this.ArrayValue[i] = mp[i];
+        endloop
+    endfunction
+
+    function Add(object)
+        let this.Size=this.Size+1;
+        let this.ArrayValue[this.Size-1] = object;
+    endfunction
+
+    function Pop()
+        if(this.Size == 0)
+            raise "Cannot Pop(), Array is empty!";
+        endif
+        let this.Size = this.Size - 1;
+    endfunction
+
+    function Get(idx as integer)
+        if(idx >= this.Size)
+            raise "Out of bounds";
+        endif
+        return this.ArrayValue[idx];
+    endfunction
+
+    function Set(idx as integer, object)
+        if(idx >= this.Size)
+            raise "Out of bounds";
+        endif
+        let this.ArrayValue[idx] = object;
+    endfunction
+
+    function Assign(N as integer, object)
+        for(let i = 0; i < N; let i = i +1)
+            let this.ArrayValue[i] = object;
+        endloop
+        let this.Size = N;
+    endfunction
+
+    function Resize(N as integer)
+        let this.Size = N;
+    endfunction
+
+    function Find(object)
+        for(let i = 0; i < this.Size; let i = i+1)
+            if(this.ArrayValue[i] == object)
+                return i;
+            endif
+        endloop
+        return -1;
+    endfunction
+    
+    function __operator_plus (other)
+        let output = this;
+        for (let i = 0; i < other.Size; let i = i + 1)
+            output.Add(other.Get(i));
+        endloop
+        return output;
+    endfunction
+endclass

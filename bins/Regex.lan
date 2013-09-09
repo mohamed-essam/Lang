@@ -1,0 +1,32 @@
+import Array;
+
+class Match
+    Index, Length;
+    
+    function Match(Index, Length)
+        let this.Index = Index;
+        let this.Length = Length;
+    endfunction
+endclass
+
+class __Regex
+    function Match(expr, space)
+        let matches = regexSearch(expr, space);
+        if(count(matches))
+            return new Match(matches[0], matches[1]);
+        else
+            return new Match(-1, -1);
+        endif
+    endfunction
+    
+    function Matches(expr, space)
+        let matches = regexSearch(expr, space);
+        let ret = new Array();
+        for(let i = 0; i < count(matches); let i = i + 2)
+            ret.Add(new Match(matches[i], matches[i+1]));
+        endloop
+        return ret;
+    endfunction
+endclass
+
+let Regex = new __Regex();

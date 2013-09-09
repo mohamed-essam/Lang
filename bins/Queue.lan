@@ -1,0 +1,48 @@
+class Queue
+    ArrayRep, Size;
+    Start, End;
+
+    function Queue()
+        let Size = 0;
+        let ArrayRep = map();
+        let Start = let End = 0;
+    endfunction
+
+    function Push(object)
+        if(Size == 0)
+            let ArrayRep[Start] = object;
+            let Size = Size+1;
+        else
+            let ArrayRep[End+1] = object;
+            let Size = Size +1;
+            let End = End +1;
+        endif
+    endfunction
+
+    function Pop()
+        if(Size == 0)
+            raise "Cannot Pop(), Queue is empty!";
+        elif(Size == 1)
+            let Size = Size-1;
+            let ret = ArrayRep[Start];
+            let Start = let End = 0;
+            return ret;
+        else
+            let Size = Size-1;
+            let Start = Start+1;
+            return ArrayRep[Start-1];
+        endif
+    endfunction
+
+    function Empty()
+        return Size == 0;
+    endfunction
+
+    function Front()
+        if(Size == 0)
+            raise "Cannot get Front(), Queue is empty!";
+        else
+            return ArrayRep[Start];
+        endif
+    endfunction
+endclass
