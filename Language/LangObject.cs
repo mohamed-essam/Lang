@@ -40,7 +40,7 @@ namespace Lang.language
         }
         public bool Greater(LangObject other)
         {
-            return (this.GreaterEqual(other) && !this.Equal(other));
+            return !(this.Smaller(other) || this.Equal(other));
         }
         public bool GreaterEqual(LangObject other)
         {
@@ -48,11 +48,11 @@ namespace Lang.language
         }
         public bool Equal(LangObject other)
         {
-            return !this.Smaller(other) && !other.Smaller(this);
+            return !(this.Smaller(other) || other.Smaller(this));
         }
         public bool NotEqual(LangObject other)
         {
-            return !this.Equal(other);
+            return this.Smaller(other) || other.Smaller(this);
         }
         #endregion
 
