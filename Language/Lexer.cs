@@ -15,6 +15,8 @@ namespace Lang.language
         public string FileName = "";
         int idx;
         LangManager langManager;
+        static private Hashtable reservedKeywords;
+        static private Hashtable reservedSpecialCharacters;
 
         public Lexer(LangManager _langManager, string _code = "")
         {
@@ -23,242 +25,125 @@ namespace Lang.language
             langManager = _langManager;
         }
 
+        static private void InitReservedKeywords()
+        {
+            reservedKeywords = new Hashtable();
+            
+            // ----------------------------------- Simple Statements
+            reservedKeywords["let"] = TokenType.LET;
+            reservedKeywords["print"] = TokenType.PRINT;
+            reservedKeywords["scan"] = TokenType.SCAN;
+            reservedKeywords["return"] = TokenType.RETURN;
+            reservedKeywords["global"] = TokenType.GLOBAL;
+            reservedKeywords["as"] = TokenType.AS;
+            reservedKeywords["break"] = TokenType.BREAK;
+            reservedKeywords["continue"] = TokenType.CONTINUE;
+            reservedKeywords["stop"] = TokenType.STOP;
+            reservedKeywords["import"] = TokenType.IMPORT;
+            reservedKeywords["new"] = TokenType.NEW;
+            reservedKeywords["raise"] = TokenType.RAISE;
+            reservedKeywords["extends"] = TokenType.EXTENDS;
+
+            // ----------------------------------- Compound Statements
+            reservedKeywords["if"] = TokenType.IF;
+            reservedKeywords["elif"] = TokenType.ELIF;
+            reservedKeywords["else"] = TokenType.ELSE;
+            reservedKeywords["endif"] = TokenType.ENDIF;
+            reservedKeywords["for"] = TokenType.FOR;
+            reservedKeywords["while"] = TokenType.WHILE;
+            reservedKeywords["endloop"] = TokenType.ENDLOOP;
+            reservedKeywords["try"] = TokenType.TRY;
+            reservedKeywords["catch"] = TokenType.CATCH;
+            reservedKeywords["endtry"] = TokenType.ENDTRY;
+            reservedKeywords["endcatch"] = TokenType.ENDCATCH;
+            reservedKeywords["func"] = TokenType.FUNCTION;
+            reservedKeywords["function"] = TokenType.FUNCTION;
+            reservedKeywords["endfunc"] = TokenType.ENDFUNCTION;
+            reservedKeywords["endfunction"] = TokenType.ENDFUNCTION;
+            reservedKeywords["class"] = TokenType.CLASS;
+            reservedKeywords["endclass"] = TokenType.ENDCLASS;
+        }
+
+        static private void InitReservedSpecialCharacters()
+        {
+            reservedSpecialCharacters = new Hashtable();
+
+            // --------------------------- Mathematical Operators
+            reservedSpecialCharacters["+"] = TokenType.PLUS;
+            reservedSpecialCharacters["-"] = TokenType.MINUS;
+            reservedSpecialCharacters["*"] = TokenType.MUL;
+            reservedSpecialCharacters["/"] = TokenType.DIV;
+            reservedSpecialCharacters["//"] = TokenType.DIV_INT;
+            reservedSpecialCharacters["%"] = TokenType.MOD;
+            reservedSpecialCharacters["^"] = TokenType.POW;
+
+            // --------------------------- Logical Operators
+            reservedSpecialCharacters["<"] = TokenType.SMALLER;
+            reservedSpecialCharacters[">"] = TokenType.GREATER;
+            reservedSpecialCharacters["="] = TokenType.EQUAL;
+            reservedSpecialCharacters[">="] = TokenType.GREATER_EQUAL;
+            reservedSpecialCharacters["<="] = TokenType.SMALLER_EQUAL;
+            reservedSpecialCharacters["!="] = TokenType.NOT_EQUAL;
+            reservedSpecialCharacters["=="] = TokenType.EQUAL_TEST;
+            reservedSpecialCharacters["&"] = TokenType.AND;
+            reservedSpecialCharacters["|"] = TokenType.OR;
+
+            // --------------------------- Other
+            reservedSpecialCharacters[";"] = TokenType.SEMICOLON;
+            reservedSpecialCharacters[","] = TokenType.COMMA;
+            reservedSpecialCharacters["."] = TokenType.DOT;
+            reservedSpecialCharacters["("] = TokenType.L_PARA;
+            reservedSpecialCharacters[")"] = TokenType.R_PARA;
+            reservedSpecialCharacters["["] = TokenType.L_BRACK;
+            reservedSpecialCharacters["]"] = TokenType.R_BRACK;
+        }
+
         public void updateCode(string _code)
         {
             tokens.Clear();
             code = _code + ' ';
         }
 
-        void acceptToken(string lexeme, TokenType type, int start, int end)
+        void acceptToken(string lexeme, TokenType type)
         {
-            Token token = new Token(lexeme, type, line, FileName, start, end);
+            Token token = new Token(lexeme, type, line, FileName, idx - lexeme.Length, idx);
+            tokens.Add(token);
+        }
+        void acceptToken(string lexeme, TokenType type, int idx)
+        {
+            Token token = new Token(lexeme, type, line, FileName, idx, idx + lexeme.Length);
             tokens.Add(token);
         }
 
-        int decide(char tok, char peek)
+        int decide(char tok_, char peek_)
         {
-            if (peek == '/' && tok == peek)
+            string tok = tok_ + "";
+            string peek = peek_ + "";
+            if (peek == "/" && tok == peek)
             {
-                acceptToken(tok + "/", TokenType.DIV_INT, idx, idx+1);
+                acceptToken(tok + "/", TokenType.DIV_INT, idx);
                 return 1;
             }
-            if (peek == '=')
+            if (peek == "=")
             {
-                switch (tok)
+                if (reservedSpecialCharacters.ContainsKey(tok + peek))
                 {
-                    case '>':
-                        acceptToken(tok + "=", TokenType.GREATER_EQUAL, idx, idx+1);
-                        return 1;
-                    case '<':
-                        acceptToken(tok + "=", TokenType.SMALLER_EQUAL, idx, idx + 1);
-                        return 1;
-                    case '!':
-                        acceptToken(tok + "=", TokenType.NOT_EQUAL, idx, idx + 1);
-                        return 1;
-                    case '=':
-                        acceptToken(tok + "=", TokenType.EQUAL_TEST, idx, idx + 1);
-                        return 1;
+                    acceptToken(tok + peek, (TokenType)reservedSpecialCharacters[tok + peek], idx);
+                    return 1;
                 }
             }
-            switch (tok)
+            if (reservedSpecialCharacters.ContainsKey(tok))
             {
-                case '+':
-                    acceptToken(tok + "", TokenType.PLUS, idx, idx);
-                    break;
-                case '-':
-                    acceptToken(tok + "", TokenType.MINUS, idx, idx);
-                    break;
-                case '*':
-                    acceptToken(tok + "", TokenType.MUL, idx, idx);
-                    break;
-                case '/':
-                    acceptToken(tok + "", TokenType.DIV, idx, idx);
-                    break;
-                case '(':
-                    acceptToken(tok + "", TokenType.L_PARA, idx, idx);
-                    break;
-                case ')':
-                    acceptToken(tok + "", TokenType.R_PARA, idx, idx);
-                    break;
-                case '^':
-                    acceptToken(tok + "", TokenType.POW, idx, idx);
-                    break;
-                case '<':
-                    acceptToken(tok + "", TokenType.SMALLER, idx, idx);
-                    break;
-                case '>':
-                    acceptToken(tok + "", TokenType.GREATER, idx, idx);
-                    break;
-                case '=':
-                    acceptToken(tok + "", TokenType.EQUAL, idx, idx);
-                    break;
-                case '&':
-                    acceptToken(tok + "", TokenType.AND, idx, idx);
-                    break;
-                case '|':
-                    acceptToken(tok + "", TokenType.OR, idx, idx);
-                    break;
-                case ';':
-                    acceptToken(tok + "", TokenType.SEMICOLON, idx, idx);
-                    break;
-                case ',':
-                    acceptToken(tok + "", TokenType.COMMA, idx, idx);
-                    break;
-                case '%':
-                    acceptToken(tok + "", TokenType.MOD, idx, idx);
-                    break;
-                case '[':
-                    acceptToken(tok + "", TokenType.L_BRACK, idx, idx);
-                    break;
-                case ']':
-                    acceptToken(tok + "", TokenType.R_BRACK, idx, idx);
-                    break;
-                case '\n':
-                    line++;
-                    break;
-                case '.':
-                    acceptToken(tok + "", TokenType.DOT, idx, idx);
-                    break;
+                acceptToken(tok, (TokenType)reservedSpecialCharacters[tok], idx);
             }
             return 0;
         }
 
         bool decide(string tok)
         {
-            if (tok == "print")
+            if (reservedKeywords.ContainsKey(tok))
             {
-                acceptToken(tok, TokenType.PRINT, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "scan")
-            {
-                acceptToken(tok, TokenType.SCAN, idx, idx + 3);
-                return true;
-            }
-            else if (tok == "if")
-            {
-                acceptToken(tok, TokenType.IF, idx, idx + 2);
-                return true;
-            }
-            else if (tok == "elif")
-            {
-                acceptToken(tok, TokenType.ELIF, idx, idx + 3);
-                return true;
-            }
-            else if (tok == "else")
-            {
-                acceptToken(tok, TokenType.ELSE, idx, idx + 3);
-                return true;
-            }
-            else if (tok == "endif")
-            {
-                acceptToken(tok, TokenType.ENDIF, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "for")
-            {
-                acceptToken(tok, TokenType.FOR, idx, idx + 2);
-                return true;
-            }
-            else if (tok == "endloop")
-            {
-                acceptToken(tok, TokenType.ENDLOOP, idx, idx + 6);
-                return true;
-            }
-            else if (tok == "as")
-            {
-                acceptToken(tok, TokenType.AS, idx, idx + 1);
-                return true;
-            }
-            else if (tok == "while")
-            {
-                acceptToken(tok, TokenType.WHILE, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "stop")
-            {
-                acceptToken(tok, TokenType.STOP, idx, idx + 3);
-                return true;
-            }
-            else if (tok == "function" || tok == "func")
-            {
-                if(tok == "function")
-                    acceptToken(tok, TokenType.FUNCTION, idx, idx + 7);
-                else
-                    acceptToken(tok, TokenType.FUNCTION, idx, idx + 3);
-                return true;
-            }
-            else if (tok == "endfunction" || tok == "endfunc")
-            {
-                if (tok == "endfunction")
-                    acceptToken(tok, TokenType.ENDFUNCTION, idx, idx + 10);
-                else
-                    acceptToken(tok, TokenType.ENDFUNCTION, idx, idx + 6);
-                return true;
-            }
-            else if (tok == "global")
-            {
-                acceptToken(tok, TokenType.GLOBAL, idx, idx + 5);
-                return true;
-            }
-            else if (tok == "import")
-            {
-                acceptToken(tok, TokenType.IMPORT, idx, idx + 5);
-                return true;
-            }
-            else if (tok == "class")
-            {
-                acceptToken(tok, TokenType.CLASS, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "endclass")
-            {
-                acceptToken(tok, TokenType.ENDCLASS, idx, idx + 7);
-                return true;
-            }
-            else if (tok == "new")
-            {
-                acceptToken(tok, TokenType.NEW, idx, idx + 2);
-                return true;
-            }
-            else if (tok == "let")
-            {
-                acceptToken(tok, TokenType.LET, idx, idx + 2);
-                return true;
-            }
-            else if (tok == "return")
-            {
-                acceptToken(tok, TokenType.RETURN, idx, idx + 5);
-                return true;
-            }
-            else if (tok == "raise")
-            {
-                acceptToken(tok, TokenType.RAISE, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "try")
-            {
-                acceptToken(tok, TokenType.TRY, idx, idx + 2);
-                return true;
-            }
-            else if (tok == "endtry")
-            {
-                acceptToken(tok, TokenType.ENDTRY, idx, idx + 5);
-                return true;
-            }
-            else if (tok == "catch")
-            {
-                acceptToken(tok, TokenType.CATCH, idx, idx + 4);
-                return true;
-            }
-            else if (tok == "endcatch")
-            {
-                acceptToken(tok, TokenType.ENDCATCH, idx, idx + 7);
-                return true;
-            }
-            else if (tok == "extends")
-            {
-                acceptToken(tok, TokenType.EXTENDS, idx, idx + 6);
+                acceptToken(tok, (TokenType)reservedKeywords[tok]);
                 return true;
             }
             return false;
@@ -306,7 +191,7 @@ namespace Lang.language
                         }
                         else
                         {
-                            acceptToken(past, TokenType.NUMBER, idx-past.Length, idx-1);
+                            acceptToken(past, TokenType.NUMBER);
                             past = "";
                             if (code[idx] == '\n')
                             {
@@ -331,7 +216,7 @@ namespace Lang.language
                         {
                             if(!decide(past))
                             {
-                                acceptToken(past, TokenType.ID, idx - past.Length, idx - 1);
+                                acceptToken(past, TokenType.ID);
                             }
                             past = "";
                             if (code[idx] == '\n')
@@ -357,7 +242,7 @@ namespace Lang.language
                         {
                             if (code[idx - 1] != '\\')
                             {
-                                acceptToken(past, TokenType.STRING, idx - past.Length, idx - 1);
+                                acceptToken(past, TokenType.STRING);
                                 past = "";
                                 isString = false;
                             }
@@ -365,7 +250,7 @@ namespace Lang.language
                             {
                                 if (code[idx - 2] == '\\')
                                 {
-                                    acceptToken(past, TokenType.STRING, idx - past.Length, idx - 1);
+                                    acceptToken(past, TokenType.STRING);
                                     past = "";
                                     isString = false;
                                 }

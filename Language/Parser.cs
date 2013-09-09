@@ -708,6 +708,11 @@ namespace Lang.language
             }
         }
 
+        bool isNext(TokenType type)
+        {
+            return lookAhead.type == type;
+        }
+
         void retract()
         {
             lookAhead = (Token)tokens[--p];
@@ -786,13 +791,13 @@ namespace Lang.language
 
         TryStatement try_stat()
         {
-            if (lookAhead.type != TokenType.TRY)
+            if (!isNext(TokenType.TRY))
                 return null;
             Token try_token = read();
             StatementList stats = (StatementList)statement_list();
             match(TokenType.ENDTRY);
             move();
-            if (lookAhead.type != TokenType.CATCH)
+            if (!isNext(TokenType.CATCH))
             {
                 return new TryStatement(stats, try_token);
             }
@@ -813,7 +818,7 @@ namespace Lang.language
 
         IfStatement if_stat()
         {
-            if (lookAhead.type == TokenType.IF)
+            if (isNext(TokenType.IF))
             {
                 Token ifToken = read();
                 match(TokenType.L_PARA);
@@ -824,7 +829,7 @@ namespace Lang.language
                 ArrayList data = new ArrayList();
                 StatementList ifstats = (StatementList)statement_list();
                 data.Add(new IfData(node, ifstats));
-                while (lookAhead.type == TokenType.ELIF)
+                while (isNext(TokenType.ELIF))
                 {
                     read();
                     match(TokenType.L_PARA);
@@ -836,7 +841,7 @@ namespace Lang.language
                     data.Add(new IfData(node, ifstats));
                 }
                 StatementList elseNode = null;
-                if (lookAhead.type == TokenType.ELSE)
+                if (isNext(TokenType.ELSE))
                 {
                     read();
                     ifstats = (StatementList)statement_list();
@@ -851,7 +856,7 @@ namespace Lang.language
 
         ForStatement for_stat()
         {
-            if (lookAhead.type == TokenType.FOR)
+            if (isNext(TokenType.FOR))
             {
                 Token ForToken = read();
                 match(TokenType.L_PARA);
@@ -875,7 +880,7 @@ namespace Lang.language
 
         WhileStatement while_stat()
         {
-            if (lookAhead.type == TokenType.WHILE)
+            if (isNext(TokenType.WHILE))
             {
                 Token WhileToken = read();
                 match(TokenType.L_PARA);
@@ -893,7 +898,7 @@ namespace Lang.language
 
         FunctionStatement function_stat()
         {
-            if (lookAhead.type == TokenType.FUNCTION)
+            if (isNext(TokenType.FUNCTION))
             {
                 Token FuncToken = read();
                 match(TokenType.ID);
@@ -902,11 +907,11 @@ namespace Lang.language
                 match(TokenType.L_PARA);
                 move();
                 ArrayList parameters = new ArrayList();
-                if (lookAhead.type == TokenType.ID)
+                if (isNext(TokenType.ID))
                 {
                     string param_name = lookAhead.lexeme;
                     move();
-                    if (lookAhead.type == TokenType.AS)
+                    if (isNext(TokenType.AS))
                     {
                         move();
                         string param_type = lookAhead.lexeme;
@@ -917,12 +922,12 @@ namespace Lang.language
                     {
                         parameters.Add(new Parameter(param_name));
                     }
-                    while (lookAhead.type == TokenType.COMMA)
+                    while (isNext(TokenType.COMMA))
                     {
                         move();
                         param_name = lookAhead.lexeme;
                         move();
-                        if (lookAhead.type == TokenType.AS)
+                        if (isNext(TokenType.AS))
                         {
                             move();
                             string param_type = lookAhead.lexeme;
@@ -938,13 +943,13 @@ namespace Lang.language
                 match(TokenType.R_PARA);
                 move();
                 ArrayList globals = new ArrayList();
-                if (lookAhead.type == TokenType.GLOBAL)
+                if (isNext(TokenType.GLOBAL))
                 {
                     move();
                     match(TokenType.ID);
                     globals.Add(lookAhead.lexeme);
                     move();
-                    while (lookAhead.type == TokenType.COMMA)
+                    while (isNext(TokenType.COMMA))
                     {
                         move();
                         match(TokenType.ID);
@@ -964,7 +969,7 @@ namespace Lang.language
 
         ClassStatement class_stat()
         {
-            if (lookAhead.type != TokenType.CLASS)
+            if (!isNext(TokenType.CLASS))
             {
                 return null;
             }
@@ -973,7 +978,7 @@ namespace Lang.language
             string name = lookAhead.lexeme;
             move();
             ID parent = null;
-            if (lookAhead.type == TokenType.EXTENDS)
+            if (isNext(TokenType.EXTENDS))
             {
                 move();
                 parent = new ID(lookAhead.lexeme, lookAhead);
@@ -984,11 +989,11 @@ namespace Lang.language
             ArrayList constructors = new ArrayList();
             while (true)
             {
-                if (lookAhead.type == TokenType.ID)
+                if (isNext(TokenType.ID))
                 {
                     vars.Add(lookAhead.lexeme);
                     move();
-                    while (lookAhead.type == TokenType.COMMA)
+                    while (isNext(TokenType.COMMA))
                     {
                         move();
                         match(TokenType.ID);
@@ -998,7 +1003,7 @@ namespace Lang.language
                     match(TokenType.SEMICOLON);
                     move();
                 }
-                else if (lookAhead.type == TokenType.FUNCTION)
+                else if (isNext(TokenType.FUNCTION))
                 {
                     FunctionStatement stat = function_stat();
                     if (stat.name == name)
@@ -1050,12 +1055,12 @@ namespace Lang.language
 
         Statement print_stat()
         {
-            if (lookAhead.type == TokenType.PRINT)
+            if (isNext(TokenType.PRINT))
             {
                 Token printToken = read();// 'print'
                 Node expr = expression();
                 PrintStatement stat = new PrintStatement(expr, printToken);
-                while (lookAhead.type == TokenType.COMMA)
+                while (isNext(TokenType.COMMA))
                 {
                     move();
                     expr = expression();
@@ -1068,13 +1073,13 @@ namespace Lang.language
 
         Statement scan_stat()
         {
-            if (lookAhead.type == TokenType.SCAN)
+            if (isNext(TokenType.SCAN))
             {
                 Token scanToken = read();// 'scan'
                 match(TokenType.ID);
                 Node expr = factor();
                 ArrayList extras = new ArrayList();
-                while (lookAhead.type == TokenType.COMMA)
+                while (isNext(TokenType.COMMA))
                 {
                     move();
                     match(TokenType.ID);
@@ -1082,7 +1087,7 @@ namespace Lang.language
                     extras.Add(new ScanStatement(Id, null, new ArrayList(), scanToken));
                 }
                 ID id = null;
-                if (lookAhead.type == TokenType.AS)
+                if (isNext(TokenType.AS))
                 {
                     move();
                     match(TokenType.ID);
@@ -1101,14 +1106,14 @@ namespace Lang.language
 
         BindStatement bind_stat()
         {
-            if (lookAhead.type != TokenType.LET)
+            if (!isNext(TokenType.LET))
                 return null;
             move();
             Node node = dot_expr();
             Token _token = read();
             Node expr = expression();
             ArrayList extras = new ArrayList();
-            while (lookAhead.type == TokenType.COMMA)
+            while (isNext(TokenType.COMMA))
             {
                 Node node_ = factor();
                 Token token_ = read();
@@ -1120,7 +1125,7 @@ namespace Lang.language
 
         Statement break_stat()
         {
-            if (lookAhead.type == TokenType.ID && lookAhead.lexeme == "break")
+            if (isNext(TokenType.BREAK))
             {
                 Token breakToken = read();
                 return new StoppingStatement(StatementType.BREAK, breakToken);
@@ -1130,7 +1135,7 @@ namespace Lang.language
 
         Statement continue_stat()
         {
-            if (lookAhead.type == TokenType.ID && lookAhead.lexeme == "continue")
+            if (isNext(TokenType.CONTINUE))
             {
                 return new StoppingStatement(StatementType.CONTINUE, read());
             }
@@ -1139,7 +1144,7 @@ namespace Lang.language
 
         Statement stop_stat()
         {
-            if (lookAhead.type == TokenType.STOP)
+            if (isNext(TokenType.STOP))
             {
                 return new StoppingStatement(StatementType.STOP, read());
             }
@@ -1148,13 +1153,13 @@ namespace Lang.language
 
         Statement func_call_stat()
         {
-            if (lookAhead.type == TokenType.ID)
+            if (isNext(TokenType.ID))
             {
                 Token id = read();
-                if (lookAhead.type == TokenType.L_PARA)
+                if (isNext(TokenType.L_PARA))
                 {
                     move(); // (
-                    if (lookAhead.type == TokenType.R_PARA)
+                    if (isNext(TokenType.R_PARA))
                     {
                         move();
                         return new FunctionCallStatement(id.lexeme, new ArrayList(), id);
@@ -1164,7 +1169,7 @@ namespace Lang.language
                         Node node = expression();
                         ArrayList parameters = new ArrayList();
                         parameters.Add(node);
-                        while (lookAhead.type == TokenType.COMMA)
+                        while (isNext(TokenType.COMMA))
                         {
                             move();
                             node = expression();
@@ -1185,14 +1190,14 @@ namespace Lang.language
 
         Statement import_stat()
         {
-            if (lookAhead.type != TokenType.IMPORT)
+            if (!isNext(TokenType.IMPORT))
                 return null;
             Token importToken = read();
             match(TokenType.ID);
             ArrayList imports = new ArrayList();
             imports.Add(lookAhead.lexeme);
             move();
-            while (lookAhead.type == TokenType.COMMA)
+            while (isNext(TokenType.COMMA))
             {
                 move();
                 match(TokenType.ID);
@@ -1204,7 +1209,7 @@ namespace Lang.language
 
         ClassInitStatement class_init_stat()
         {
-            if (lookAhead.type != TokenType.NEW)
+            if (!isNext(TokenType.NEW))
                 return null;
             Token newToken = read();
             FunctionCallStatement stat = (FunctionCallStatement)func_call_stat();
@@ -1225,7 +1230,7 @@ namespace Lang.language
 
         ReturnStatement return_statement()
         {
-            if (lookAhead.type != TokenType.RETURN)
+            if (!isNext(TokenType.RETURN))
                 return null;
             Token ret_token = read();
             Node expr = expression();
@@ -1234,7 +1239,7 @@ namespace Lang.language
 
         RaiseStatement raise_statement()
         {
-            if (lookAhead.type != TokenType.RAISE)
+            if (!isNext(TokenType.RAISE))
             {
                 return null;
             }
@@ -1254,7 +1259,7 @@ namespace Lang.language
         Node logic_expr(bool MustFind = true)
         {
             Node node = comp_expr(MustFind);
-            while (lookAhead.type == TokenType.AND || lookAhead.type == TokenType.OR)
+            while (isNext(TokenType.AND) || isNext(TokenType.OR))
             {
                 Token op = read();
                 Node right = comp_expr(MustFind);
@@ -1275,7 +1280,7 @@ namespace Lang.language
         Node comp_expr(bool MustFind = true)
         {
             Node node = add_expr(MustFind);
-            while (lookAhead.type == TokenType.GREATER_EQUAL || lookAhead.type == TokenType.GREATER || lookAhead.type == TokenType.SMALLER || lookAhead.type == TokenType.SMALLER_EQUAL || lookAhead.type == TokenType.EQUAL_TEST || lookAhead.type == TokenType.NOT_EQUAL)
+            while (isNext(TokenType.GREATER_EQUAL) || isNext(TokenType.GREATER) || isNext(TokenType.SMALLER) || isNext(TokenType.SMALLER_EQUAL) || isNext(TokenType.EQUAL_TEST) || isNext(TokenType.NOT_EQUAL))
             {
                 Token op = read();
                 Node right = add_expr(MustFind);
@@ -1312,7 +1317,7 @@ namespace Lang.language
         Node add_expr(bool MustFind = true)
         {
             Node node = mul_expr(MustFind);
-            while (lookAhead.type == TokenType.MINUS || lookAhead.type == TokenType.PLUS)
+            while (isNext(TokenType.MINUS) || isNext(TokenType.PLUS))
             {
                 Token op = read();
                 Node right = mul_expr(MustFind);
@@ -1333,7 +1338,7 @@ namespace Lang.language
         Node mul_expr(bool MustFind = true)
         {
             Node node = pow_expr(MustFind);
-            while (lookAhead.type == TokenType.MUL || lookAhead.type == TokenType.DIV || lookAhead.type == TokenType.DIV_INT || lookAhead.type == TokenType.MOD)
+            while (isNext(TokenType.MUL) || isNext(TokenType.DIV) || isNext(TokenType.DIV_INT) || isNext(TokenType.MOD))
             {
                 Token op = read();
                 Node right = pow_expr(MustFind);
@@ -1362,7 +1367,7 @@ namespace Lang.language
         Node pow_expr(bool MustFind = true)
         {
             Node node = dot_expr(MustFind);
-            if (lookAhead.type == TokenType.POW)
+            if (isNext(TokenType.POW))
             {
                 Token powToken = read();
                 return new BinaryOperator(NodeType.POW, node, pow_expr(MustFind), "^", powToken);
@@ -1373,7 +1378,7 @@ namespace Lang.language
         Node dot_expr(bool MustFind = true)
         {
             Node node = factor(MustFind);
-            while (lookAhead.type == TokenType.DOT || lookAhead.type == TokenType.L_BRACK)
+            while (isNext(TokenType.DOT) || isNext(TokenType.L_BRACK))
             {
                 Token dotToken = read();
                 NodeType type = NodeType.DOT;
@@ -1386,7 +1391,7 @@ namespace Lang.language
                 {
                     _right = new ID(lookAhead.lexeme, lookAhead);
                     move();
-                    if (lookAhead.type == TokenType.L_PARA)
+                    if (isNext(TokenType.L_PARA))
                     {
                         retract();
                         _right = func_call_stat();
@@ -1404,20 +1409,20 @@ namespace Lang.language
 
         Node factor(bool MustFind = true)
         {
-            if (lookAhead.type == TokenType.MINUS)
+            if (isNext(TokenType.MINUS))
             {
                 Token lookedAhead = lookAhead;
                 move();
                 Node node = new BinaryOperator(NodeType.MINUS, new Number("0", null), factor(), "-", lookedAhead);
                 return node;
             }
-            else if (lookAhead.type == TokenType.NUMBER)
+            else if (isNext(TokenType.NUMBER))
             {
                 Token lookedAhead = lookAhead;
                 move();
                 return new Number(lookedAhead.lexeme, lookedAhead);
             }
-            else if (lookAhead.type == TokenType.ID)
+            else if (isNext(TokenType.ID))
             {
                 Statement stat = simple_stat(true);
                 if (stat != null)
@@ -1426,40 +1431,23 @@ namespace Lang.language
                 }
                 Token lookedAhead = lookAhead;
                 move();
-                /*
-                BinaryOperator main = null;
-                while (lookAhead.type == TokenType.L_BRACK)
-                {
-                    Token brackToken = read();
-                    Node node = expression();
-                    match(TokenType.R_BRACK);
-                    move();
-                    if (main == null)
-                    {
-                        main = new BinaryOperator(NodeType.BRACKETS, new ID(lookedAhead.lexeme, lookedAhead), node, "[]", brackToken);
-                    }
-                    else
-                    {
-                        main = new BinaryOperator(NodeType.BRACKETS, main, node, "[]", brackToken);
-                    }
-                }
-                */
                 return new ID(lookedAhead.lexeme, lookedAhead);
             }
-            else if (lookAhead.type == TokenType.STRING)
+            else if (isNext(TokenType.STRING))
             {
                 Token lookedAhead = lookAhead;
                 move();
                 return new StringVal(lookedAhead.lexeme, lookedAhead);
             }
-            else if (lookAhead.type == TokenType.L_PARA)
+            else if (isNext(TokenType.L_PARA))
             {
                 move();// (
                 Node node = expression();
+                match(TokenType.R_PARA);
                 move();// )
                 return node;
             }
-            else if (lookAhead.type == TokenType.NEW)
+            else if (isNext(TokenType.NEW))
             {
                 return class_init_stat();
             }
