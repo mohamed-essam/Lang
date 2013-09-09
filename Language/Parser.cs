@@ -1320,7 +1320,7 @@ namespace Lang.language
                 {
                     nodeType = NodeType.OR;
                 }
-                node = new BinaryOperator(nodeType, node, right, op.lexeme, op);
+                node = new BinaryOperator(nodeType, node, right, op);
             }
             return node;
         }
@@ -1357,7 +1357,7 @@ namespace Lang.language
                 {
                     nodeType = NodeType.NOT_EQUAL;
                 }
-                node = new BinaryOperator(nodeType, node, right, op.lexeme, op);
+                node = new BinaryOperator(nodeType, node, right, op);
             }
             return node;
         }
@@ -1378,7 +1378,7 @@ namespace Lang.language
                 {
                     nodeType = NodeType.MINUS;
                 }
-                node = new BinaryOperator(nodeType, node, right, op.lexeme, op);
+                node = new BinaryOperator(nodeType, node, right, op);
             }
             return node;
         }
@@ -1407,7 +1407,7 @@ namespace Lang.language
                 {
                     nodeType = NodeType.MOD;
                 }
-                node = new BinaryOperator(nodeType, node, right, op.lexeme, op);
+                node = new BinaryOperator(nodeType, node, right, op);
             }
             return node;
         }
@@ -1418,7 +1418,7 @@ namespace Lang.language
             if (isNext(TokenType.POW))
             {
                 Token powToken = read();
-                return new BinaryOperator(NodeType.POW, node, pow_expr(MustFind), "^", powToken);
+                return new BinaryOperator(NodeType.POW, node, pow_expr(MustFind), powToken);
             }
             return node;
         }
@@ -1450,7 +1450,7 @@ namespace Lang.language
                     _right = expression(MustFind);
                     move();
                 }
-                node = new BinaryOperator(type, node, _right, dotToken.lexeme, dotToken);
+                node = new BinaryOperator(type, node, _right, dotToken);
             }
             return node;
         }
@@ -1461,7 +1461,7 @@ namespace Lang.language
             {
                 Token lookedAhead = lookAhead;
                 move();
-                Node node = new BinaryOperator(NodeType.MINUS, new Number("0", null), factor(), "-", lookedAhead);
+                Node node = new BinaryOperator(NodeType.MINUS, new Number("0", null), factor(), lookedAhead);
                 return node;
             }
             else if (isNext(TokenType.NUMBER))

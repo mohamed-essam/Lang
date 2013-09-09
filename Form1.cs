@@ -494,7 +494,12 @@ namespace Lang
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
                 if (langManager.lastException.Length > 0)
                 {
-                    MessageBox.Show(langManager.lastException, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                    string StackTrace = "";
+                    foreach(StackTraceEntry entry in langManager.interpreter.StackTrace){
+                        StackTrace = "\nIn file " + entry.FileName + ": Line " + entry.LineNumber + ": Function '" + entry.FunctionName + "'" + StackTrace;
+                    }
+                    langManager.lastException = "In file " + langManager.lastErrorToken.file + ": " + langManager.lastException;
+                    MessageBox.Show(langManager.lastException + StackTrace, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                     if (langManager.lastErrorToken != null)
                     {
                         codeRTB.SelectionStart = langManager.lastErrorToken.startIndex;
@@ -507,6 +512,7 @@ namespace Lang
                             codeRTB.SelectionLength = langManager.lastErrorToken.endIndex - langManager.lastErrorToken.startIndex;
                         }
                     }
+
                 }
                 outputRTB.Text += "\r\nElapsed Time: " + elapsedTime;
                 LiveErrors.Enabled = true;

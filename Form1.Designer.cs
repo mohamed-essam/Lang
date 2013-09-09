@@ -261,6 +261,7 @@
             this.DebugLV.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.name,
             this.type});
+            this.DebugLV.Enabled = false;
             this.DebugLV.Location = new System.Drawing.Point(707, 60);
             this.DebugLV.Name = "DebugLV";
             this.DebugLV.Size = new System.Drawing.Size(291, 179);

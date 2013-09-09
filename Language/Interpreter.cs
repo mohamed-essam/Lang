@@ -11,6 +11,21 @@ using System.Diagnostics;
 
 namespace Lang.language
 {
+    internal class StackTraceEntry
+    {
+        internal string FileName;
+        internal string FunctionName;
+        internal int LineNumber;
+
+        public StackTraceEntry(string _fileName, string _functionName, int _lineNumber)
+        {
+            FileName = _fileName;
+            FunctionName = _functionName;
+            LineNumber = _lineNumber;
+        }
+
+    }
+
     public class Interpreter
     {
         StatementList root;
@@ -25,6 +40,8 @@ namespace Lang.language
         internal string FileName;
         LangConsole console;
         LangManager langManager;
+        internal ArrayList StackTrace;
+        private string lastFunctionCalled = "__MAIN__";
 
         /// <summary>
         /// Creates a new Interpeter object
@@ -38,6 +55,7 @@ namespace Lang.language
             classes = new Hashtable();
             console = _console;
             breakpoints = new ArrayList();
+            StackTrace = new ArrayList();
             langManager = _langManager;
         }
 
@@ -64,6 +82,7 @@ namespace Lang.language
         {
             functions.Clear();
             classes.Clear();
+            StackTrace.Clear();
             foreach (Statement statement in root.statements)
             {
                 if (statement.type == StatementType.FUNCTION)
@@ -920,7 +939,11 @@ namespace Lang.language
                 {
                     ((Hashtable)table[level])[((Parameter)func.parameters[i]).name] = ((LangObject)paramsCalcd[i]);
                 }
+                StackTrace.Add(new StackTraceEntry(node.token.file, lastFunctionCalled, node.token.line));
+                lastFunctionCalled = func.name;
                 LangObject obj2 = statListDecider(func.stats);
+                lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
+                StackTrace.RemoveAt(StackTrace.Count - 1);
                 decreaseLevel();
                 foreach (string name in func.globals)
                 {
@@ -1620,7 +1643,11 @@ namespace Lang.language
                 }
             }
             ((Hashtable)table[level])["this"] = _class;
+            StackTrace.Add(new StackTraceEntry(_call.token.file, lastFunctionCalled, _call.token.line));
+            lastFunctionCalled = _call.name;
             LangObject obj = statListDecider(_function.stats);
+            lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
+            StackTrace.RemoveAt(StackTrace.Count - 1);
             level--;
             /*
             Hashtable levelplus = (Hashtable)table[level + 1];
@@ -1947,10 +1974,12 @@ namespace Lang.language
             LangObject raise = decider(stat.expr);
             if (raise.objectType == ObjectType.STRING)
             {
+                langManager.lastErrorToken = node.token;
                 throw new Exception("Line " + node.token.line + ": " + ((LangString)raise).stringValue);
             }
             else
             {
+                langManager.lastErrorToken = node.token;
                 throw new Exception("Cannot throw any type other than string, " + Convert.ToString(raise.objectType) + " Found");
             }
         }
