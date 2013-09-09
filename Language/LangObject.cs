@@ -599,7 +599,7 @@ namespace Lang.language
 
         public override LangObject Clone()
         {
-            return new LangImage((Bitmap)imageValue.Clone());
+            return new LangImage(new Bitmap(imageValue));
         }
 
         public override LangObject Divide(LangObject other)
