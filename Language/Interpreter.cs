@@ -570,7 +570,11 @@ namespace Lang.language
                         throw new Exception("Line " + node.token.line + ": " + "File path '" + filePath + "' doesn't exist");
                     }
                 }
-                Bitmap img = new Bitmap(filePath);
+                Bitmap img = null;
+                using (var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Open))
+                {
+                    img = new Bitmap(fs);
+                }
                 LangImage ret = new LangImage(img);
                 return ret;
             }
@@ -595,18 +599,15 @@ namespace Lang.language
                 try
                 {
                     string filePath = ((LangString)param2).stringValue;
-                    if (!File.Exists(filePath))
+                    if (!filePath.Contains(":"))
                     {
-                        if (!filePath.Contains(":"))
+                        if (filePath.StartsWith("\\"))
                         {
-                            if (filePath.StartsWith("\\"))
-                            {
-                                filePath = Directory.GetCurrentDirectory() + filePath;
-                            }
-                            else
-                            {
-                                filePath = Directory.GetCurrentDirectory() + "\\" + filePath;
-                            }
+                            filePath = Directory.GetCurrentDirectory() + filePath;
+                        }
+                        else
+                        {
+                            filePath = Directory.GetCurrentDirectory() + "\\" + filePath;
                         }
                     }
                     if (!File.Exists(filePath))
@@ -702,9 +703,9 @@ namespace Lang.language
                 LangNumber X = (LangNumber)_X,
                            Y = (LangNumber)_Y;
                 Hashtable tbl = new Hashtable();
-                tbl[0.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R;
-                tbl[1.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G;
-                tbl[2.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B;
+                tbl[0.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R);
+                tbl[1.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G);
+                tbl[2.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B);
                 return new LangMap(tbl);
             }
             #endregion
@@ -736,6 +737,82 @@ namespace Lang.language
                 LangImage img = (LangImage)_img;
 
                 return new LangNumber(img.imageValue.Height);
+            }
+            #endregion
+            #region drawImageLine
+            else if (stat.name == "drawImageLine")
+            {
+                checkParameterNumber("drawImageLine", 9, stat);
+                LangObject _img, _X1, _Y1, _X2, _Y2, _R, _G, _B, _T;
+                _img = decider((Node)stat.parameters[0]);
+                _X1 = decider((Node)stat.parameters[1]);
+                _Y1 = decider((Node)stat.parameters[2]);
+                _X2 = decider((Node)stat.parameters[3]);
+                _Y2 = decider((Node)stat.parameters[4]);
+                _R = decider((Node)stat.parameters[5]);
+                _G = decider((Node)stat.parameters[6]);
+                _B = decider((Node)stat.parameters[7]);
+                _T = decider((Node)stat.parameters[8]);
+                #region TypeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_X1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                }
+                if (_Y1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                }
+                if (_X2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                }
+                if (_Y2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                }
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                if (_T.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                #endregion
+                LangImage img = (LangImage)_img;
+                LangNumber X1 = (LangNumber)_X1,
+                           Y1 = (LangNumber)_Y1,
+                           X2 = (LangNumber)_X2,
+                           Y2 = (LangNumber)_Y2,
+                           R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B,
+                           T = (LangNumber)_T;
+                var graphics = Graphics.FromImage(img.imageValue);
+                Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
+                graphics.DrawLine(pen, new Point((int)X1.numberValue, (int)Y1.numberValue), new Point((int)X2.numberValue, (int)Y2.numberValue));
+                return new LangNumber(0);
             }
             #endregion
             #endregion
@@ -1140,14 +1217,13 @@ namespace Lang.language
 
         LangObject BracketsInterpret(Node node, LangObject _val, bool onlyOnNotFoundState = false)
         {
-            if (node.nodeType == NodeType.ID)
+            if (node.nodeType != NodeType.BRACKETS)
             {
-                ID node_ = (ID)node;
-                LangObject obj = (LangObject)((Hashtable)table[level])[((ID)node).name];
+                LangObject obj = decider(node);
                 if (obj == null)
-                    return (LangObject)(((Hashtable)table[level])[node_.name] = new LangMap(new Hashtable()));
+                    return obj = new LangMap(new Hashtable());
                 if (obj.objectType != ObjectType.MAP && obj.objectType != ObjectType.STRING)
-                    return (LangObject)(((Hashtable)table[level])[node_.name] = new LangMap(new Hashtable()));
+                    return obj = new LangMap(new Hashtable());
                 return obj;
             }
             BinaryOperator _node = (BinaryOperator)node;

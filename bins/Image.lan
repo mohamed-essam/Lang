@@ -16,118 +16,32 @@ endclass
 
 class Image
     Bitmap;
-    PixelMap;
-    OriginalPath;
     
     function Image(path as string)
         let this.Bitmap = getImage(path);
-        let this.OriginalPath = path;
-        let this.PixelMap = map();
-        this.__BitsToPixels();
     endfunction
     
-    function Image(Width as integer, Height as integer)
-        let this.Bitmap = map();
-        for(let i = 0; i < Width; let i = i + 1)
-            for(let j = 0; j < Height; let j = j + 1)
-                let this.Bitmap[i][j] = map();
-                let this.Bitmap[i][j][0] = 0;
-                let this.Bitmap[i][j][1] = 0;
-                let this.Bitmap[i][j][2] = 0;
-            endloop
-        endloop
-        let this.OriginalPath = getCurrentDirectory() + "\Untitled.png";
-        let this.PixelMap = map();
-        this.__BitsToPixels();
-    endfunction
-    
-    function Image(Width as integer, Height as integer, R as integer, G as integer, B as integer)
-        let this.Bitmap = map();
-        for(let i = 0; i < Width; let i = i + 1)
-            for(let j = 0; j < Height; let j = j + 1)
-                let this.Bitmap[i][j] = map();
-                let this.Bitmap[i][j][0] = R;
-                let this.Bitmap[i][j][1] = G;
-                let this.Bitmap[i][j][2] = B;
-            endloop
-        endloop
-        let this.OriginalPath = getCurrentDirectory() + "\Untitled.png";
-        let this.PixelMap = map();
-        this.__BitsToPixels();
-    endfunction
-    
-    function Image(Width as integer, Height as integer, pixel as Pixel)
-        let this.Bitmap = map();
-        for(let i = 0; i < Width; let i = i + 1)
-            for(let j = 0; j < Height; let j = j + 1)
-                let this.Bitmap[i][j] = map();
-                let this.Bitmap[i][j][0] = pixel.R;
-                let this.Bitmap[i][j][1] = pixel.G;
-                let this.Bitmap[i][j][2] = pixel.B;
-            endloop
-        endloop
-        let this.OriginalPath = getCurrentDirectory() + "\Untitled.png";
-        let this.PixelMap = map();
-        this.__BitsToPixels();
-    endfunction
-    
-    function UpdatePixel(X as integer, Y as integer, NewPixel as Pixel)
+    function GetPixel(X as integer, Y as integer)
         this.__CheckCoords(X, Y);
-        let this.PixelMap[X][Y] = NewPixel;
-        let this.Bitmap[X][Y][0] = NewPixel.R;
-        let this.Bitmap[X][Y][1] = NewPixel.G;
-        let this.Bitmap[X][Y][2] = NewPixel.B;
+        return new Pixel(getImagePixel(this.Bitmap, X, Y));
     endfunction
     
-    function __CheckCoords(X as integer, Y as integer)
-        if(X < 0 | X >= this.GetWidth())
-            raise "X must be in range from '0' to 'Width - 1', " + X + " Given";
-        endif
-        if(Y < 0 | Y >= this.GetHeight())
-            raise "Y must be in range from '0' to 'Height - 1', " + Y + " Given";
-        endif
-    endfunction
-    
-    function __BitsToPixels()
-        for(let i = 0; i < count(this.Bitmap); let i = i+1)
-            for(let j = 0; j < count(this.Bitmap[i]); let j = j + 1)
-                let this.PixelMap[i][j] = new Pixel(this.Bitmap[i][j]);
-            endloop
-        endloop
-    endfunction
-    
-    function __CheckIsPixel(toCheck, FuncName, ParamNum)
-        if(getTypeName(toCheck) != "Pixel")
-            raise FuncName + " expects parameter " + ParamNum + " to be Pixel, " + getTypeName(toCheck) + " given";
-        endif
-        if(toCheck.R < 0 | toCheck.R > 255)
-            raise "Pixel.R is out of range '0'-'255', " + toCheck.R + " Given";
-        endif
-        if(toCheck.G < 0 | toCheck.G > 255)
-            raise "Pixel.G is out of range '0'-'255', " + toCheck.G + " Given";
-        endif
-        if(toCheck.B < 0 | toCheck.B > 255)
-            raise "Pixel.B is out of range '0'-'255', " + toCheck.B + " Given";
-        endif
+    function UpdatePixel(X as integer, Y as integer, pixel as Pixel)
+        this.__CheckCoords(X, Y);
+        setImagePixel(this.Bitmap, X, Y, pixel.R, pixel, G, pixel, B);
     endfunction
     
     function GetWidth()
-        return count(this.PixelMap);
+        return getImageWidth(this.Bitmap);
     endfunction
     
     function GetHeight()
-        if(count(this.PixelMap) == 0)
-            return 0;
-        else
-            return count(this.PixelMap[0]);
+        return getImageHeight(this.Bitmap);
+    endfunction
+    
+    function __CheckCoords(X, Y)
+        if(X < 0 | X >= this.GetWidth() | Y < 0 | Y > this.GetHeight())
+            raise "Coordinates out of bounds!";
         endif
-    endfunction
-    
-    function Save()
-        saveImage(this.Bitmap, this.OriginalPath);
-    endfunction
-    
-    function Save(path as string)
-        saveImage(this.Bitmap, path);
     endfunction
 endclass

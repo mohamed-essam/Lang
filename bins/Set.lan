@@ -15,9 +15,9 @@ class Set
     ArrayRep;
 
     function Set ()
-        let this.root = new __SET_Node();
-        let this.root.exists = 0;
-        let this.Size = 0;
+        let root = new __SET_Node();
+        let root.exists = 0;
+        let Size = 0;
     endfunction
 
     function __LRsetup(node)
@@ -55,22 +55,22 @@ class Set
     endfunction
 
     function Add(object)
-        if(this.root.exists == 0)
-            let this.root.exists = 1;
-            let this.root._data = object;
-            let this.root = this.__LRsetup(root);
-            let this.Size = Size + 1;
+        if(root.exists == 0)
+            let root.exists = 1;
+            let root._data = object;
+            let root = this.__LRsetup(root);
+            let Size = Size + 1;
         else
-            let this.root = this.putInLocation(root, object);
-            let this.Size = this.Size + 1;
+            let root = this.putInLocation(root, object);
+            let Size = Size + 1;
         endif
     endfunction
 
     function Top()
-        if(this.root.exists == 0)
+        if(root.exists == 0)
             return 0;
         else
-            let curNode = this.root;
+            let curNode = root;
             while(curNode._left.exists == 1)
                 let curNode = curNode._left;
             endloop
@@ -93,11 +93,11 @@ class Set
     endfunction
 
     function Pop()
-        if(this.root.exists == 0)
+        if(root.exists == 0)
             raise "Cannot Pop(), Set is empty!";
         else
-            let this.root = this._remove(this.root);
-            let this.Size = this.Size - 1;
+            let root = this._remove(root);
+            let Size = Size - 1;
         endif
     endfunction
     
@@ -113,7 +113,7 @@ class Set
     
     function ToArray ()
         let this .ArrayRep = new Array ();
-        if (this.root .exists)
+        if (root .exists)
             this .__traverse (root);
         endif
         return this .ArrayRep;

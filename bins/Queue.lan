@@ -3,46 +3,46 @@ class Queue
     Start, End;
 
     function Queue()
-        let this.Size = 0;
-        let this.ArrayRep = map();
-        let this.Start = let this.End = 0;
+        let Size = 0;
+        let ArrayRep = map();
+        let Start = let End = 0;
     endfunction
 
     function Push(object)
-        if(this.Size == 0)
-            let this.ArrayRep[this.Start] = object;
-            let this.Size = this.Size+1;
+        if(Size == 0)
+            let ArrayRep[Start] = object;
+            let Size = Size+1;
         else
-            let this.ArrayRep[this.End+1] = object;
-            let this.Size = this.Size +1;
-            let this.End = this.End +1;
+            let ArrayRep[End+1] = object;
+            let Size = Size +1;
+            let End = End +1;
         endif
     endfunction
 
     function Pop()
-        if(this.Size == 0)
+        if(Size == 0)
             raise "Cannot Pop(), Queue is empty!";
-        elif(this.Size == 1)
-            let this.Size = this.Size-1;
-            let ret = this.ArrayRep[Start];
-            let this.Start = let this.End = 0;
+        elif(Size == 1)
+            let Size = Size-1;
+            let ret = ArrayRep[Start];
+            let Start = let End = 0;
             return ret;
         else
-            let this.Size = this.Size-1;
-            let this.Start = this.Start+1;
-            return this.ArrayRep[this.Start-1];
+            let Size = Size-1;
+            let Start = Start+1;
+            return ArrayRep[Start-1];
         endif
     endfunction
 
     function Empty()
-        return this.Size == 0;
+        return Size == 0;
     endfunction
 
     function Front()
-        if(this.Size == 0)
+        if(Size == 0)
             raise "Cannot get Front(), Queue is empty!";
         else
-            return this.ArrayRep[Start];
+            return ArrayRep[Start];
         endif
     endfunction
 endclass

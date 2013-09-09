@@ -40,7 +40,7 @@ class Array
     endfunction
 
     function Get(idx as integer)
-        if(idx >= this.Size)
+        if(idx >= this.Size | idx < 0)
             raise "Out of bounds";
         endif
         return this.ArrayValue[idx];
