@@ -540,6 +540,7 @@ namespace Lang.language
                 return new LangNumber(1);
             }
             #endregion
+            #region Image Operations
             #region getImage
             else if (stat.name == "getImage")
             {
@@ -570,21 +571,7 @@ namespace Lang.language
                     }
                 }
                 Bitmap img = new Bitmap(filePath);
-                LangMap ret = new LangMap(new Hashtable());
-                for (int i = 0; i < img.Width; i++)
-                {
-                    LangMap retret = new LangMap(new Hashtable());
-                    for (int j = 0; j < img.Height; j++)
-                    {
-                        LangMap retretret = new LangMap(new Hashtable());
-                        retretret.arrayValue[0.0] = new LangNumber(img.GetPixel(i, j).R);
-                        retretret.arrayValue[1.0] = new LangNumber(img.GetPixel(i, j).G);
-                        retretret.arrayValue[2.0] = new LangNumber(img.GetPixel(i, j).B);
-                        retret.arrayValue[(double)j] = retretret;
-                    }
-                    ret.arrayValue[(double)i] = retret;
-                }
-                img.Dispose();
+                LangImage ret = new LangImage(img);
                 return ret;
             }
             #endregion
@@ -595,102 +582,162 @@ namespace Lang.language
                 LangObject param1, param2;
                 param1 = decider((Node)stat.parameters[0]);
                 param2 = decider((Node)stat.parameters[1]);
-                if (param1.objectType != ObjectType.MAP)
+                if (param1.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'map', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 if (param2.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
                     throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
-                #region check Map Validity
-                LangMap bm = (LangMap)param1;
-                int width = bm.arrayValue.Count;
-                int height = 0;
-                if (bm.arrayValue.Count == 0)
-                {
-                    width = height = 0;
-                }
-                else
-                {
-                    foreach (DictionaryEntry dic in bm.arrayValue)
-                    {
-                        LangObject lo = (LangObject)dic.Value;
-                        if (lo.objectType != ObjectType.MAP)
-                        {
-                            throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                        }
-                    }
-                    height = -1;
-                    foreach (DictionaryEntry dic in bm.arrayValue)
-                    {
-                        if (height == -1)
-                        {
-                            height = ((LangMap)dic.Value).arrayValue.Count;
-                        }
-                        else
-                        {
-                            if (((LangMap)dic.Value).arrayValue.Count != height)
-                            {
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            }
-                        }
-                        foreach (DictionaryEntry dicc in ((LangMap)dic.Value).arrayValue)
-                        {
-                            if (((LangObject)dicc.Value).objectType != ObjectType.MAP)
-                            {
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            }
-                            LangMap lo = (LangMap)dicc.Value;
-                            if (lo.arrayValue.Count != 3)
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            if (((LangObject)lo.arrayValue[0.0]).objectType != ObjectType.NUMBER)
-                            {
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            }
-                            if (((LangObject)lo.arrayValue[1.0]).objectType != ObjectType.NUMBER)
-                            {
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            }
-                            if (((LangObject)lo.arrayValue[2.0]).objectType != ObjectType.NUMBER)
-                            {
-                                throw new Exception("Line " + node.token.line + ": " + "saveImage: Invalid Map Format!");
-                            }
-                        }
-                    }
-
-                }
-                #endregion
-                if (height == -1)
-                    height = 0;
-                Bitmap bitmap = new Bitmap(width, height);
-                foreach (DictionaryEntry dic in bm.arrayValue)
-                {
-                    LangMap bmm = (LangMap)dic.Value;
-                    foreach (DictionaryEntry dicc in bmm.arrayValue)
-                    {
-                        LangMap bmmm = (LangMap)dicc.Value;
-                        int R, G, B;
-                        R = (int)((LangNumber)bmmm.arrayValue[0.0]).numberValue;
-                        G = (int)((LangNumber)bmmm.arrayValue[1.0]).numberValue;
-                        B = (int)((LangNumber)bmmm.arrayValue[2.0]).numberValue;
-                        bitmap.SetPixel((int)((double)dic.Key), (int)((double)dicc.Key), Color.FromArgb(R, G, B));
-                    }
-                }
                 try
                 {
-                    bitmap.Save(((LangString)param2).stringValue);
+                    string filePath = ((LangString)param2).stringValue;
+                    if (!File.Exists(filePath))
+                    {
+                        if (!filePath.Contains(":"))
+                        {
+                            if (filePath.StartsWith("\\"))
+                            {
+                                filePath = Directory.GetCurrentDirectory() + filePath;
+                            }
+                            else
+                            {
+                                filePath = Directory.GetCurrentDirectory() + "\\" + filePath;
+                            }
+                        }
+                    }
+                    if (!File.Exists(filePath))
+                    {
+                        throw new Exception("");
+                    }
+                    ((LangImage)param1).imageValue.Save(filePath);
                 }
                 catch (Exception)
                 {
-                    bitmap.Dispose();
-                    throw new Exception("Line " + node.token.line + ": " + "saveImage: Permission Denied!");
+                    return new LangNumber(0);
                 }
-                bitmap.Dispose();
                 return new LangNumber(1);
             }
+            #endregion
+            #region setImagePixel
+            else if (stat.name == "setImagePixel")
+            {
+                checkParameterNumber("setImagePixel", 6, stat);
+                LangObject _img, _X, _Y, _R, _G, _B;
+                _img = decider((Node)stat.parameters[0]);
+                _X = decider((Node)stat.parameters[1]);
+                _Y = decider((Node)stat.parameters[2]);
+                _R = decider((Node)stat.parameters[3]);
+                _G = decider((Node)stat.parameters[4]);
+                _B = decider((Node)stat.parameters[5]);
+                #region TypeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_X.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                }
+                if (_Y.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                }
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                #endregion
+                LangImage img = (LangImage)_img;
+                LangNumber X = (LangNumber)_X,
+                           Y = (LangNumber)_Y,
+                           R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B;
+                img.imageValue.SetPixel((int)X.numberValue, (int)Y.numberValue, Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
+                return new LangNumber(1);
+            }
+            #endregion
+            #region getImagePixel
+            else if (stat.name == "getImagePixel")
+            {
+                checkParameterNumber("getImagePixel", 3, stat);
+                LangObject _img, _X, _Y;
+                _img = decider((Node)stat.parameters[0]);
+                _X = decider((Node)stat.parameters[1]);
+                _Y = decider((Node)stat.parameters[2]);
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_X.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                }
+                if (_Y.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                }
+                LangImage img = (LangImage)_img;
+                LangNumber X = (LangNumber)_X,
+                           Y = (LangNumber)_Y;
+                Hashtable tbl = new Hashtable();
+                tbl[0.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R;
+                tbl[1.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G;
+                tbl[2.0] = img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B;
+                return new LangMap(tbl);
+            }
+            #endregion
+            #region getImageWidth
+            else if (stat.name == "getImageWidth")
+            {
+                checkParameterNumber("getImageWidth", 1, stat);
+                LangObject _img = (LangObject)stat.parameters[0];
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                LangImage img = (LangImage)_img;
+
+                return new LangNumber(img.imageValue.Width);
+            }
+            #endregion
+            #region getImageHeight
+            else if (stat.name == "getImageHeight")
+            {
+                checkParameterNumber("getImageHeight", 1, stat);
+                LangObject _img = (LangObject)stat.parameters[0];
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                LangImage img = (LangImage)_img;
+
+                return new LangNumber(img.imageValue.Height);
+            }
+            #endregion
             #endregion
             #region getTypeName
             else if (stat.name == "getTypeName")
@@ -727,7 +774,7 @@ namespace Lang.language
                 if (functions.Contains(stat.name))
                 {
                     ArrayList funcs = (ArrayList)functions[stat.name];
-                    for(int i = 0; i < funcs.Count; i++)
+                    for (int i = 0; i < funcs.Count; i++)
                     {
                         FunctionStatement st = (FunctionStatement)(funcs)[i];
                         if (st.parameters.Count != stat.parameters.Count)
@@ -799,7 +846,7 @@ namespace Lang.language
                 lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
                 StackTrace.RemoveAt(StackTrace.Count - 1);
                 decreaseLevel();
-                for(int i = 0; i < func.globals.Count; i++)
+                for (int i = 0; i < func.globals.Count; i++)
                 {
                     string name = (string)func.globals[i];
                     ((Hashtable)table[level])[name] = ((Hashtable)table[level + 1])[name];

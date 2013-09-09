@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 //using System.Threading.Tasks;
 using System.Collections;
+using System.Drawing;
 
 namespace Lang.language
 {
@@ -11,7 +12,8 @@ namespace Lang.language
     {
         STRING, NUMBER, ARRAY, MAP,
         STATE,
-        CLASS
+        CLASS,
+        IMAGE
     }
 
     public abstract class LangObject
@@ -77,14 +79,8 @@ namespace Lang.language
                     return ((LangString)(other)).Multiply(this);
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue * ((LangNumber)(other)).numberValue);
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'number' * 'array'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' * 'map'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' * 'class'");
                 default:
-                    return null;
+                    throw new InvalidOperationException("Invalid operation 'number' * '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -92,18 +88,10 @@ namespace Lang.language
         {
             switch (other.objectType)
             {
-                case ObjectType.STRING:
-                    throw new InvalidOperationException("Invalid operation 'number' / 'string'");
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue / ((LangNumber)(other)).numberValue);
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'number' / 'array'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' / 'map'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' / 'class'");
                 default:
-                    return null;
+                    throw new InvalidOperationException("Invalid operation 'number' / '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -115,14 +103,8 @@ namespace Lang.language
                     return new LangString(Convert.ToString(numberValue) + ((LangString)(other)).stringValue);
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue + ((LangNumber)(other)).numberValue);
-                case ObjectType.ARRAY:
-                    throw new NotImplementedException("Array is not implemented yet");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' + 'map'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' + 'class'");
                 default:
-                    return null;
+                    throw new InvalidOperationException("Invalid operation 'number' + '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -130,18 +112,10 @@ namespace Lang.language
         {
             switch (other.objectType)
             {
-                case ObjectType.STRING:
-                    throw new InvalidOperationException("Invalid operation 'number' - 'string'");
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue - ((LangNumber)(other)).numberValue);
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'number' - 'array'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' - 'map'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' - 'class'");
                 default:
-                    return null;
+                    throw new InvalidOperationException("Invalid operation 'number' - '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -149,18 +123,10 @@ namespace Lang.language
         {
             switch (other.objectType)
             {
-                case ObjectType.STRING:
-                    throw new InvalidOperationException("Invalid operation 'number' ^ 'string'");
                 case ObjectType.NUMBER:
                     return new LangNumber(Math.Pow(numberValue, ((LangNumber)(other)).numberValue));
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'number' ^ 'array'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' ^ 'map'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' ^ 'class'");
                 default:
-                    return null;
+                    throw new InvalidOperationException("Invalid operation 'number' ^ '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -177,18 +143,10 @@ namespace Lang.language
         {
             switch (other.objectType)
             {
-                case ObjectType.STRING:
-                    throw new InvalidOperationException("Invalid operation 'number' < 'string'");
                 case ObjectType.NUMBER:
                     return numberValue < ((LangNumber)(other)).numberValue;
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'number' < 'string'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'number' < 'string'");
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'number' < 'class'");
                 default:
-                    throw new Exception("Undefined Type!");
+                    throw new InvalidOperationException("Invalid operation 'number' < '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -216,16 +174,8 @@ namespace Lang.language
                     return new LangString(stringValue + ((LangString)other).stringValue);
                 case ObjectType.NUMBER:
                     return new LangString(stringValue + Convert.ToString(((LangNumber)other).numberValue));
-                case ObjectType.ARRAY:
-                    throw new InvalidOperationException("Invalid operation 'string' + 'array'");
-                case ObjectType.MAP:
-                    throw new InvalidOperationException("Invalid operation 'string' + 'map'");
-                case ObjectType.STATE:
-                    throw new NotImplementedException();
-                case ObjectType.CLASS:
-                    throw new InvalidOperationException("Invalid operation 'string' + 'class'");
                 default:
-                    throw new NotImplementedException();
+                    throw new InvalidOperationException("Invalid operation '" + Convert.ToString(this.objectType) + "' + '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -634,6 +584,57 @@ namespace Lang.language
             {
                 throw new InvalidOperationException("No overloaded function for '" + this.name + "' < '" + right.name + "'");
             }
+        }
+    }
+
+    public class LangImage : LangObject
+    {
+        internal Bitmap imageValue;
+
+        public LangImage(Bitmap _imageValue)
+            : base(ObjectType.IMAGE)
+        {
+            imageValue = _imageValue;
+        }
+
+        public override LangObject Clone()
+        {
+            return new LangImage((Bitmap)imageValue.Clone());
+        }
+
+        public override LangObject Divide(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LangObject Minus(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LangObject Multiply(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Smaller(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LangObject Pow(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LangObject Mod(LangObject other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override LangObject Plus(LangObject other)
+        {
+            throw new NotImplementedException();
         }
     }
 }
