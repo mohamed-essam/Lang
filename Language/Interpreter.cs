@@ -1824,7 +1824,22 @@ namespace Lang.language
             ImportStatement _node = (ImportStatement)node;
             foreach (string file in _node.imports)
             {
-                string code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + file + ".lan");
+                string code = "";
+                try
+                {
+                    code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + file + ".lan");
+                }
+                catch (IOException)
+                {
+                    try
+                    {
+                        code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\Include\\" + file + ".lan");
+                    }
+                    catch (IOException)
+                    {
+                        throw new Exception("The file " + file + " doesn't exists");
+                    }
+                }
                 Lexer lexer = new Lexer(new LangManager(null, null), code);
                 lexer.FileName = file;
                 Parser parser = new Parser(new LangManager(null, null));

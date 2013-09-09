@@ -50,10 +50,17 @@ namespace Lang.language
             if (INTERPRET == true)
             {
                 tree = new DependencyTree();
-                bool isBad = tree.DetectCirularDependency("", code);
-                if (isBad)
+                try
                 {
-                    throw new Exception("Circular reasoning doesn't work, trust me.");
+                    bool isBad = tree.DetectCirularDependency("", code);
+                    if (isBad)
+                    {
+                        throw new Exception("Circular reasoning doesn't work, trust me.");
+                    }
+                }
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }

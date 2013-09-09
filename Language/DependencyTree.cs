@@ -94,7 +94,21 @@ namespace Lang.language
             {
                 if (code == null)
                 {
-                    code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + fileName + ".lan");
+                    try
+                    {
+                        code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + fileName + ".lan");
+                    }
+                    catch (IOException)
+                    {
+                        try
+                        {
+                            code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\Include\\" + fileName + ".lan");
+                        }
+                        catch (IOException)
+                        {
+                            throw new Exception("The file " + fileName + " doesn't exist!");
+                        }
+                    }
                 }
                 lexer.updateCode(code);
                 lexer.FileName = fileName;
