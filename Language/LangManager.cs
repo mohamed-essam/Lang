@@ -26,6 +26,11 @@ namespace Lang.language
         Node root;
         DependencyTree tree;
 
+        /// <summary>
+        /// Creates a new LangManager object with the given LangConsole and file name
+        /// </summary>
+        /// <param name="console">The LangConsole object that the code will read/write to it</param>
+        /// <param name="fileName">The name of the file to be Lexed, Parsed, and Interpreted</param>
         public LangManager(LangConsole console, string fileName)
         {
             lexer = new Lexer(this);
@@ -35,6 +40,10 @@ namespace Lang.language
             interpreter.FileName = fileName;
         }
 
+        /// <summary>
+        /// Updates the code and checks for circular dependecy
+        /// </summary>
+        /// <param name="code">The new code string</param>
         public void updateCode(string code)
         {
             lexer.updateCode(code);
@@ -49,6 +58,9 @@ namespace Lang.language
             }
         }
 
+        /// <summary>
+        /// Runs the code Given in updateCode(string) Method
+        /// </summary>
         public void run()
         {
             if (TRY)
@@ -89,6 +101,10 @@ namespace Lang.language
             }
         }
 
+        /// <summary>
+        /// Gets the tokens from the variable
+        /// </summary>
+        /// <returns>An ArrayList object containing Token objects</returns>
         public ArrayList getTokens()
         {
             return tokens;
@@ -144,12 +160,22 @@ namespace Lang.language
 
     public class Token
     {
-        internal string lexeme;
-        internal TokenType type;
-        internal int line;
-        internal int startIndex, endIndex;
-        internal string file;
+        internal string lexeme; // The actual string that this Token object was made of
+        internal TokenType type; // The TokenType instance that declares what type is this Token
+        internal int line; // the line that this Token lies in, for the debugging feature
+        internal int startIndex, endIndex; // the start and end indicies of this token, for the debugging feature
+        internal string file; // the file where this token is actually taken from, for the debugging feature
 
+        /// <summary>
+        /// Creates a new Token object, of the type _type, that was originaly _lexeme,
+        /// and it lies on _line, in the file _file, and starts in the index _start, and ends on _end
+        /// </summary>
+        /// <param name="_lexeme">The string that this token was originated from</param>
+        /// <param name="_type">The TokenType that specifies the type of this Token</param>
+        /// <param name="_line">The line where this Token lies</param>
+        /// <param name="_file">The file where this Token is actually taken from</param>
+        /// <param name="_start">The start index of the Token</param>
+        /// <param name="_end">The ending index of the Token</param>
         public Token(string _lexeme, TokenType _type, int _line, string _file, int _start, int _end)
         {
             lexeme = _lexeme;

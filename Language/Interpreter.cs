@@ -26,6 +26,11 @@ namespace Lang.language
         LangConsole console;
         LangManager langManager;
 
+        /// <summary>
+        /// Creates a new Interpeter object
+        /// </summary>
+        /// <param name="_console">The LangConsole this code will read/write</param>
+        /// <param name="_langManager">The LangManager that created this instance, for error reporting</param>
         public Interpreter(LangConsole _console, LangManager _langManager)
         {
             table = new ArrayList();
@@ -36,6 +41,10 @@ namespace Lang.language
             langManager = _langManager;
         }
 
+        /// <summary>
+        /// Updates the tree
+        /// </summary>
+        /// <param name="_root">The new Tree root</param>
         public void updateRoot(StatementList _root)
         {
             root = _root;
@@ -47,6 +56,10 @@ namespace Lang.language
 
         // Executer
 
+        /// <summary>
+        /// Starts the interpreting process
+        /// </summary>
+        /// <returns></returns>
         public LangObject interpret()
         {
             functions.Clear();

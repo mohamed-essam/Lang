@@ -9,22 +9,35 @@ namespace Lang.language
 {
     public class Lexer
     {
-        string code;
-        ArrayList tokens;
-        int line = 0;
-        public string FileName = "";
-        int idx;
-        LangManager langManager;
-        static private Hashtable reservedKeywords;
-        static private Hashtable reservedSpecialCharacters;
+        string code; // The code that would be lexed, Can be updated through updateCode(string)
+        ArrayList tokens; // The ArrayList object that contains the tokens, returned with lex()
+        int line = 0; // The line the Lexer is currently processing
+        public string FileName = ""; // The file the Lexer is currently processing
+        int idx; // The index the Lexer is currently processing
+        LangManager langManager; // The LangManager that created this Lexer, for error reporting
+        static private Hashtable reservedKeywords; // The Hashtable that contains the lexeme of the word tokens to it's TokenType
+        static private Hashtable reservedSpecialCharacters; // The Hashtable that contains the lexeme of the character tokens to it's TokenType
 
+        /// <summary>
+        /// Creates a new Lexer object with _langManager as it's error reporting instance, and calls the reserved Init function if they're not initialized.
+        /// </summary>
+        /// <param name="_langManager">The LangManager that actually created this instance</param>
+        /// <param name="_code">optional, The code that this Lexer will start with</param>
         public Lexer(LangManager _langManager, string _code = "")
         {
+            if (reservedKeywords == null)
+            {
+                InitReservedKeywords();
+                InitReservedSpecialCharacters();
+            }
             code = _code + ' ';
             tokens = new ArrayList();
             langManager = _langManager;
         }
 
+        /// <summary>
+        /// Initializes the reserved keywords, Called only once.
+        /// </summary>
         static private void InitReservedKeywords()
         {
             reservedKeywords = new Hashtable();
@@ -64,6 +77,9 @@ namespace Lang.language
             reservedKeywords["endclass"] = TokenType.ENDCLASS;
         }
 
+        /// <summary>
+        /// initializes the reserved characters, Called only once.
+        /// </summary>
         static private void InitReservedSpecialCharacters()
         {
             reservedSpecialCharacters = new Hashtable();
@@ -98,23 +114,46 @@ namespace Lang.language
             reservedSpecialCharacters["]"] = TokenType.R_BRACK;
         }
 
+        /// <summary>
+        /// Updates the code that would be lexed when lex() is called.
+        /// </summary>
+        /// <param name="_code">The code to lex</param>
         public void updateCode(string _code)
         {
             tokens.Clear();
             code = _code + ' ';
         }
 
+        /// <summary>
+        /// Creates a new token with the lexeme and type provided.
+        /// </summary>
+        /// <param name="lexeme">the lexeme the Token will be initialized with</param>
+        /// <param name="type">the TokenType that the Token will initialized with</param>
         void acceptToken(string lexeme, TokenType type)
         {
             Token token = new Token(lexeme, type, line, FileName, idx - lexeme.Length, idx);
             tokens.Add(token);
         }
+
+        /// <summary>
+        /// Creates a new token with the lexeme and type provided.
+        /// </summary>
+        /// <param name="lexeme">the lexeme the Token will be initialized with</param>
+        /// <param name="type">the TokenType that the Token will initialized with</param>
+        /// <param name="idx">the index where this Token starts</param>
         void acceptToken(string lexeme, TokenType type, int idx)
         {
             Token token = new Token(lexeme, type, line, FileName, idx, idx + lexeme.Length);
             tokens.Add(token);
         }
 
+        /// <summary>
+        /// Decides the TokenType of the character, 
+        /// the next character is given for two character Tokens.
+        /// </summary>
+        /// <param name="tok_">The character that this function will operate on</param>
+        /// <param name="peek_">The character that follows, for two character Tokens</param>
+        /// <returns>1 or 0, depending on whether the function took <paramref name="peek_"/> or not</returns>
         int decide(char tok_, char peek_)
         {
             string tok = tok_ + "";
@@ -139,6 +178,11 @@ namespace Lang.language
             return 0;
         }
 
+        /// <summary>
+        /// Decides the TokenType of the word given.
+        /// </summary>
+        /// <param name="tok">The word to decide</param>
+        /// <returns>Whether it is reserved or not</returns>
         bool decide(string tok)
         {
             if (reservedKeywords.ContainsKey(tok))
@@ -149,6 +193,10 @@ namespace Lang.language
             return false;
         }
 
+        /// <summary>
+        /// Starts the lexing process
+        /// </summary>
+        /// <returns>ArrayList object that contains all the tokens generated</returns>
         public ArrayList lex()
         {
             string past = "";

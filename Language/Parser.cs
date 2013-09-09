@@ -8,11 +8,16 @@ using System.Collections;
 namespace Lang.language
 {
     #region Node
-    abstract public class Node
+    abstract public class Node : IDisposable
     {
-        internal NodeType nodeType;
-        internal Token token;
+        internal NodeType nodeType; // The NodeType of this Node
+        internal Token token; // The Token this Node was created from
 
+        /// <summary>
+        /// Creates a new Node
+        /// </summary>
+        /// <param name="_nodeType">The NodeType this Node will be created from</param>
+        /// <param name="_token">The Token this Node will be created from</param>
         public Node(NodeType _nodeType, Token _token)
         {
             nodeType = _nodeType;
@@ -40,8 +45,13 @@ namespace Lang.language
     #region factors
     public class Number : Node
     {
-        internal string value;
+        internal string value; // The value of this Number in string format
 
+        /// <summary>
+        /// Creates a new Number object
+        /// </summary>
+        /// <param name="_value">The string value of the Number</param>
+        /// <param name="_token">The Token this Node will be created from</param>
         public Number(string _value, Token _token)
             : base(NodeType.NUMBER, _token)
         {
@@ -62,8 +72,13 @@ namespace Lang.language
 
     public class ID : Node
     {
-        public string name;
+        public string name; // The name of this ID
 
+        /// <summary>
+        /// Creates a new ID object
+        /// </summary>
+        /// <param name="_name">The name of this ID</param>
+        /// <param name="_token">The token this Node will be created from</param>
         public ID(string _name, Token _token)
             : base(NodeType.ID, _token)
         {
@@ -84,8 +99,13 @@ namespace Lang.language
 
     public class StringVal : Node
     {
-        public string val;
+        public string val; // The string
 
+        /// <summary>
+        /// Creates a new StringVal object
+        /// </summary>
+        /// <param name="_val">The value of this string</param>
+        /// <param name="_token">The Token thin Node will be created from</param>
         public StringVal(string _val, Token _token)
             : base(NodeType.STRING, _token)
         {
@@ -108,15 +128,22 @@ namespace Lang.language
 
     public class BinaryOperator : Node
     {
-        internal Node left, right;
-        internal string lexeme;
+        internal Node left, right; // The left and right Nodes
+        internal string lexeme; // The lexeme of this node
 
-        public BinaryOperator(NodeType _nodeType, Node _left, Node _right, string _lexeme, Token _token)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_nodeType">The NodeType this BinaryOperator will be created from</param>
+        /// <param name="_left">The Left Node this BinaryOperator will be created from</param>
+        /// <param name="_right">The Right Node this BinaryOperator will be created from</param>
+        /// <param name="_token">The Token this Node will be created from</param>
+        public BinaryOperator(NodeType _nodeType, Node _left, Node _right, Token _token)
             : base(_nodeType, _token)
         {
             left = _left;
             right = _right;
-            lexeme = _lexeme;
+            lexeme = _token.lexeme;
         }
 
         public override string ToString()
@@ -170,8 +197,13 @@ namespace Lang.language
 
     public class StatementList : Node
     {
-        public ArrayList statements;
+        public ArrayList statements; // ArrayList of Statement objects
 
+        /// <summary>
+        /// Creates a new StatementList object
+        /// </summary>
+        /// <param name="_statements">The statements that this StatementList contains</param>
+        /// <param name="_token">The Token this Node will be created from</param>
         public StatementList(ArrayList _statements, Token _token)
             : base(NodeType.STATEMENT_LIST, _token)
         {
@@ -650,11 +682,19 @@ namespace Lang.language
         Token lookAhead;
         LangManager langManager;
 
+        /// <summary>
+        /// Creates a new Parser object
+        /// </summary>
+        /// <param name="_langManager">The LangManager for error reporting</param>
         public Parser(LangManager _langManager)
         {
             langManager = _langManager;
         }
 
+        /// <summary>
+        /// Updates the token list
+        /// </summary>
+        /// <param name="_tokens">The ArrayList that contains the Tokens</param>
         public void updateTokens(ArrayList _tokens)
         {
             p = 0;
@@ -719,6 +759,10 @@ namespace Lang.language
         }
         #endregion
         // Parser
+        /// <summary>
+        /// Starts the parsing process
+        /// </summary>
+        /// <returns>A StatementList object containing the tree</returns>
         public Node parse()
         {
             return prog();
@@ -726,6 +770,10 @@ namespace Lang.language
 
         #region top_stats
 
+        /// <summary>
+        /// Parses the Tokens given
+        /// </summary>
+        /// <returns>A StatementList object that contains the tree of the code</returns>
         Node prog()
         {
             Node node = statement_list();
