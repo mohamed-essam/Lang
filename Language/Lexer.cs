@@ -17,6 +17,7 @@ namespace Lang.language
         LangManager langManager; // The LangManager that created this Lexer, for error reporting
         static private Hashtable reservedKeywords; // The Hashtable that contains the lexeme of the word tokens to it's TokenType
         static private Hashtable reservedSpecialCharacters; // The Hashtable that contains the lexeme of the character tokens to it's TokenType
+        static private Hashtable toEscaped;
 
         /// <summary>
         /// Creates a new Lexer object with _langManager as it's error reporting instance, and calls the reserved Init function if they're not initialized.
@@ -29,6 +30,7 @@ namespace Lang.language
             {
                 InitReservedKeywords();
                 InitReservedSpecialCharacters();
+                InitToEscaped();
             }
             code = _code + ' ';
             tokens = new ArrayList();
@@ -112,6 +114,26 @@ namespace Lang.language
             reservedSpecialCharacters[")"] = TokenType.R_PARA;
             reservedSpecialCharacters["["] = TokenType.L_BRACK;
             reservedSpecialCharacters["]"] = TokenType.R_BRACK;
+        }
+
+        /// <summary>
+        /// initializes the toEscaped map, Called once.
+        /// </summary>
+        static private void InitToEscaped()
+        {
+            toEscaped = new Hashtable();
+            toEscaped['a'] = '\a';
+            toEscaped['b'] = '\b';
+            toEscaped['f'] = '\f';
+            toEscaped['n'] = '\n';
+            toEscaped['r'] = '\r';
+            toEscaped['t'] = '\t';
+            toEscaped['v'] = '\v';
+            toEscaped['\\'] = '\\';
+            toEscaped['\''] = '\'';
+            toEscaped['"'] = '\"';
+            toEscaped['0'] = '\0';
+            toEscaped['a'] = '\a';
         }
 
         /// <summary>
@@ -205,6 +227,7 @@ namespace Lang.language
             bool isComment = false;
             for (idx = 0; idx < code.Length; idx++)
             {
+                #region isComment
                 if (isComment)
                 {
                     if (code[idx] != '\n')
@@ -217,8 +240,11 @@ namespace Lang.language
                         line++;
                     }
                 }
+                #endregion
+                #region Past > 0 || isString
                 else if (past.Length > 0 || isString)
                 {
+                    #region isNum
                     if (isNum)
                     {
                         if ((code[idx] >= '0' && code[idx] <= '9') || code[idx] == '.')
@@ -254,6 +280,8 @@ namespace Lang.language
                             }
                         }
                     }
+                    #endregion
+                    #region isID
                     else if (isID)
                     {
                         if ((code[idx] >= '0' && code[idx] <= '9') || (code[idx] >= 'a' && code[idx] <= 'z') || (code[idx] >= 'A' && code[idx] <= 'Z') || code[idx] == '_')
@@ -280,37 +308,43 @@ namespace Lang.language
                             }
                         }
                     }
+                    #endregion
+                    #region isString
                     else if (isString)
                     {
-                        if (code[idx] != '"')
+                        if (code[idx] != '\\' && code[idx] != '"')
                         {
                             past = past + code[idx];
+
+                        }
+                        else if (code[idx] == '"')
+                        {
+                            acceptToken(past, TokenType.STRING);
+                            isString = false;
+                            past = "";
                         }
                         else
                         {
-                            if (code[idx - 1] != '\\')
+                            if (!toEscaped.ContainsKey(code[idx+1]))
                             {
-                                acceptToken(past, TokenType.STRING);
-                                past = "";
-                                isString = false;
-                            }
-                            else
-                            {
-                                if (code[idx - 2] == '\\')
+                                if (langManager.INTERPRET)
                                 {
-                                    acceptToken(past, TokenType.STRING);
-                                    past = "";
-                                    isString = false;
+                                    langManager.lastErrorToken = new Token(("" + code[idx]) + ("" + code[idx + 1]), TokenType.STRING, line, FileName, idx, idx + 2);
                                 }
                                 else
                                 {
-                                    past = past.Substring(0, past.Length - 1);
-                                    past = past + code[idx];
+                                    langManager.lastLiveErrorToken = new Token(("" + code[idx]) + ("" + code[idx + 1]), TokenType.STRING, line, FileName, idx, idx + 2);
                                 }
+                                throw new Exception("Invalid Escape Sequence");
                             }
+                            past = past + toEscaped[code[idx+1]];
+                            idx++;
                         }
                     }
+                    #endregion
                 }
+                #endregion
+                #region starts
                 else if (code[idx] == '"')
                 {
                     isString = true;
@@ -329,6 +363,7 @@ namespace Lang.language
                     isNum = false;
                     isID = true;
                 }
+                #endregion
                 else
                 {
                     past = "";
