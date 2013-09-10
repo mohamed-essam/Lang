@@ -569,7 +569,7 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_smaller"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_plus"];
+                FunctionStatement stat = (FunctionStatement)(((ArrayList)this.methods["__operator_smaller"])[0]);
                 LangObject obj = Form1.langManager.interpreter.RunClassOperator(stat, this, right);
                 if (obj.objectType == ObjectType.NUMBER)
                 {

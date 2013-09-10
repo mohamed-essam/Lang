@@ -16,9 +16,11 @@ endclass
 
 class Image
     Bitmap;
+    OriginalPath;
     
     function Image(path as string)
         let this.Bitmap = getImage(path);
+        let this.OriginalPath = path;
     endfunction
     
     function GetPixel(X as integer, Y as integer)
@@ -80,31 +82,39 @@ class Image
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, 0, 0, 0, 1, 0 ,0 ,0);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, 0, 0, 0, 1, 0 ,0 ,0);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, 1, pixel1.R, pixel1.G, pixel1.B);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, 1, pixel1.R, pixel1.G, pixel1.B);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, 1, R1 ,G1 ,B1);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, 1, R1 ,G1 ,B1);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, T, R1 ,G1 ,B1);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, T, R1 ,G1 ,B1);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer, pixel2 as Pixel)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
     endfunction
     
     function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
-        drawImageFilledRectangle(X1, Y1, X2, Y2, R1, G1, B1, T, R2 ,G2 ,B2);
+        drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, T, R2 ,G2 ,B2);
+    endfunction
+    
+    function Save()
+        saveImage(this.Bitmap, this.OriginalPath);
+    endfunction
+    
+    function Save(path as string)
+        saveImage(this.Bitmap, path);
     endfunction
     
     function __CheckCoords(X, Y)

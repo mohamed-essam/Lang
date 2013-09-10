@@ -588,16 +588,25 @@ namespace Lang.language
         {
             token = null;
             name = null;
-            foreach (Parameter param in parameters)
+            if (parameters != null)
             {
-                param.Dispose();
+                foreach (Parameter param in parameters)
+                {
+                    param.Dispose();
+                }
+                parameters.Clear();
+                parameters = null;
             }
-            parameters.Clear();
-            parameters = null;
-            stats.Dispose();
-            stats = null;
-            globals.Clear();
-            globals = null;
+            if (stats != null)
+            {
+                stats.Dispose();
+                stats = null;
+            }
+            if (globals != null)
+            {
+                globals.Clear();
+                globals = null;
+            }
         }
     }
 
@@ -623,9 +632,12 @@ namespace Lang.language
         {
             name = null;
             vars.Clear();
-            foreach (FunctionStatement stat in methods)
+            foreach (DictionaryEntry stat in methods)
             {
-                stat.Dispose();
+                foreach (FunctionStatement statt in ((ArrayList)stat.Value))
+                {
+                    statt.Dispose();
+                }
             }
             methods.Clear();
             methods = null;
@@ -1060,7 +1072,11 @@ namespace Lang.language
                     }
                     else
                     {
-                        methods[stat.name] = stat;
+                        if (!methods.ContainsKey(stat.name))
+                        {
+                            methods[stat.name] = new ArrayList();
+                        }
+                        ((ArrayList)methods[stat.name]).Add(stat);
                     }
                 }
                 else

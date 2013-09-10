@@ -122,7 +122,58 @@ namespace Lang.language
                     }
                     foreach (DictionaryEntry dicc in ((ClassStatement)arr[i]).methods)
                     {
-                        cs.methods[dicc.Key] = dicc.Value;
+                        ArrayList methods = (ArrayList)dicc.Value;
+                        string name = (string)dicc.Key;
+                        if (cs.methods.ContainsKey(name))
+                        {
+                            ArrayList csMethods = (ArrayList)cs.methods[name];
+                            for (int m = 0; m < methods.Count; m++)
+                            {
+                                bool Found = false;
+                                FunctionStatement mm;
+                                mm = (FunctionStatement)methods[m];
+                                for (int csM = 0; csM < csMethods.Count; csM++)
+                                {
+                                    FunctionStatement csMm;
+                                    csMm = (FunctionStatement)csMethods[csM];
+                                    if (mm.parameters.Count != csMm.parameters.Count)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        bool Works = true;
+                                        for (int pr = 0; pr < mm.parameters.Count; pr++)
+                                        {
+                                            Parameter mmp, csMmp;
+                                            mmp = (Parameter)mm.parameters[pr];
+                                            csMmp = (Parameter)csMm.parameters[pr];
+                                            if (!(mmp.type == "any" || csMmp.type == "any" || csMmp.type == mmp.type))
+                                            {
+                                                Works = false;
+                                                break;
+                                            }
+                                        }
+                                        if (Works)
+                                        {
+                                            Found = true;
+                                            csMethods[csM] = mm;
+                                            break;
+                                        }
+                                    }
+                                    if (Found)
+                                        break;
+                                }
+                                if (!Found)
+                                {
+                                    csMethods.Add(mm);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            cs.methods[name] = methods;
+                        }
                     }
                 }
                 cs.constructors = ((ClassStatement)dic.Value).constructors;
@@ -1552,7 +1603,7 @@ namespace Lang.language
                     langManager.lastErrorToken = _right.token;
                     throw new Exception("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
                 }
-                return RunClassFunction((FunctionStatement)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
+                return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
             }
 
 
@@ -1651,6 +1702,98 @@ namespace Lang.language
                 _class.vars[dic.Key] = dic.Value;
             }
             */
+            if (obj.objectType == ObjectType.STATE)
+            {
+                LangState obj_state = (LangState)obj;
+                if (obj_state.message == "return")
+                {
+                    return obj_state.optionalMessage;
+                }
+            }
+            return obj;
+        }
+        LangObject RunClassFunction(ArrayList _functions, FunctionCallStatement _call, LangClass _class, ArrayList alreadyCalcd = null)
+        {
+            if (!keepWorking)
+                return new LangState("stop");
+            FunctionStatement _function = null;
+            if (alreadyCalcd == null)
+            {
+                alreadyCalcd = new ArrayList();
+                for (int i = 0; i < _call.parameters.Count; i++)
+                {
+                    alreadyCalcd.Add(decider((Node)_call.parameters[i]));
+                }
+            }
+            #region find correct overloading
+            ArrayList funcs = _functions;
+            for (int i = 0; i < funcs.Count; i++)
+            {
+                FunctionStatement st = (FunctionStatement)(funcs)[i];
+                if (st.parameters.Count != _call.parameters.Count)
+                {
+                    continue;
+                }
+                else
+                {
+                    bool works = true;
+                    for (int j = 0; j < _call.parameters.Count; j++)
+                    {
+                        Parameter param = (Parameter)st.parameters[j];
+                        LangObject paramC = (LangObject)alreadyCalcd[j];
+                        if (param.type == "any")
+                        {
+                            continue;
+                        }
+                        else if (param.type == "integer" || param.type == "number")
+                        {
+                            if (paramC.objectType != ObjectType.NUMBER)
+                            {
+                                works = false;
+                                break;
+                            }
+                        }
+                        else if (param.type == "string")
+                        {
+                            if (paramC.objectType != ObjectType.STRING)
+                            {
+                                works = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name == param.type))
+                            {
+                                works = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (works)
+                    {
+                        _function = st;
+                        break;
+                    }
+                }
+            }
+            #endregion
+            level++;
+            if (level >= table.Count)
+                table.Add(new Hashtable());
+            for (int i = 0; i < _call.parameters.Count; i++)
+            {
+                LangObject ret = (LangObject)alreadyCalcd[i];
+                Parameter param = ((Parameter)_function.parameters[i]);
+                ((Hashtable)table[level])[param.name] = ret;
+            }
+            ((Hashtable)table[level])["this"] = _class;
+            StackTrace.Add(new StackTraceEntry(_call.token.file, lastFunctionCalled, _call.token.line));
+            lastFunctionCalled = _call.name;
+            LangObject obj = statListDecider(_function.stats);
+            lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
+            StackTrace.RemoveAt(StackTrace.Count - 1);
+            level--;
             if (obj.objectType == ObjectType.STATE)
             {
                 LangState obj_state = (LangState)obj;
