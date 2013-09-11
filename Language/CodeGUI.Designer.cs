@@ -40,6 +40,7 @@
             this.Canvas.TabIndex = 0;
             this.Canvas.TabStop = false;
             this.Canvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Canvas_MouseClick);
+            this.Canvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Canvas_MouseMove);
             // 
             // CodeGUI
             // 

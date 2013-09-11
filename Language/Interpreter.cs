@@ -197,6 +197,7 @@ namespace Lang.language
                 thread = new Thread(new ParameterizedThreadStart(runGUI));
                 gui = null;
                 thread.Start(Thread.CurrentThread);
+                Thread.Sleep(500);
                 while (consoleUI == null || !consoleUI.IsHandleCreated)
                 {
                     Thread.Sleep(1);

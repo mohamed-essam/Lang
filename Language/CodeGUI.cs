@@ -56,5 +56,20 @@ namespace Lang.Language
                 handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
             }
         }
+
+        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            ArrayList parameters = new ArrayList();
+            parameters.Add(e.X);
+            parameters.Add(e.Y);
+            try
+            {
+                handler.EventHandler("CanvasMouseMove", parameters);
+            }
+            catch (Exception ex)
+            {
+                handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+            }
+        }
     }
 }
