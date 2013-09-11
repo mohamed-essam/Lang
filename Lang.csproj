@@ -68,6 +68,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Language\CodeConsoleUI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Language\CodeConsoleUI.Designer.cs">
+      <DependentUpon>CodeConsoleUI.cs</DependentUpon>
+    </Compile>
     <Compile Include="Language\CodeGUI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -91,6 +97,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Language\CodeConsoleUI.resx">
+      <DependentUpon>CodeConsoleUI.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Language\CodeGUI.resx">
       <DependentUpon>CodeGUI.cs</DependentUpon>
     </EmbeddedResource>

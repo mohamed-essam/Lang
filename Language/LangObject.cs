@@ -601,7 +601,17 @@ namespace Lang.language
 
         public override LangObject Clone()
         {
-            return new LangImage(new Bitmap(imageValue), handler);
+            while (true)
+            {
+                try
+                {
+                    return new LangImage(new Bitmap(imageValue), handler);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
         }
 
         public override LangObject Divide(LangObject other)

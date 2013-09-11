@@ -83,7 +83,7 @@ namespace Lang.language
                     if (!INTERPRET)
                         return;
                     interpreter.updateRoot((StatementList)root);
-                    interpreter.interpret();
+                    interpreter.interpret(true);
                 }
                 catch (Exception e)
                 {
@@ -104,7 +104,7 @@ namespace Lang.language
                 if (!INTERPRET)
                     return;
                 interpreter.updateRoot((StatementList)root);
-                interpreter.interpret();
+                interpreter.interpret(true);
             }
         }
 

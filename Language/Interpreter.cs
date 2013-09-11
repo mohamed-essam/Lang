@@ -41,7 +41,9 @@ namespace Lang.language
         internal LangManager langManager;
         internal ArrayList StackTrace;
         private string lastFunctionCalled = "__MAIN__";
-        CodeGUI gui;
+        internal CodeConsoleUI consoleUI;
+        internal CodeGUI gui;
+        private Hashtable EventHandlers;
 
         /// <summary>
         /// Creates a new Interpeter object
@@ -77,7 +79,7 @@ namespace Lang.language
         /// Starts the interpreting process
         /// </summary>
         /// <returns></returns>
-        public LangObject interpret()
+        public LangObject interpret(bool createGUI = false)
         {
             functions.Clear();
             classes.Clear();
@@ -186,12 +188,23 @@ namespace Lang.language
             table.Add(new Hashtable());
             keepWorking = true;
             //gui = new CodeGUI(Thread.CurrentThread);
-            Thread thread = new Thread(new ParameterizedThreadStart(runGUI));
-            gui = null;
-            thread.Start(Thread.CurrentThread);
-            while (gui == null || !gui.IsHandleCreated)
+            EventHandlers = new Hashtable();
+            if (createGUI)
             {
-                Thread.Sleep(1);
+                Thread thread = new Thread(new ParameterizedThreadStart(runConsole));
+                consoleUI = null;
+                thread.Start(Thread.CurrentThread);
+                thread = new Thread(new ParameterizedThreadStart(runGUI));
+                gui = null;
+                thread.Start(Thread.CurrentThread);
+                while (consoleUI == null || !consoleUI.IsHandleCreated)
+                {
+                    Thread.Sleep(1);
+                }
+                while (gui == null || !gui.IsHandleCreated)
+                {
+                    Thread.Sleep(1);
+                }
             }
             LangObject val = null;
             try
@@ -200,22 +213,53 @@ namespace Lang.language
             }
             catch (Exception e)
             {
-                gui.Invoke((MethodInvoker)delegate() {
-                    gui.HandleExceptions(e, langManager.lastErrorToken, StackTrace);
+                if (consoleUI == null)
+                {
+                    throw;
+                }
+                consoleUI.Invoke((MethodInvoker)delegate() {
+                    consoleUI.HandleExceptions(e, langManager.lastErrorToken, StackTrace);
+                });
+                gui.Invoke((MethodInvoker)delegate(){
+                    gui.Close();
                 });
                 return val;
             }
-            gui.Invoke((MethodInvoker)delegate()
+            if (consoleUI != null)
             {
-                gui.Close();
-            });
+                consoleUI.Invoke((MethodInvoker)delegate()
+                {
+                    consoleUI.Close();
+                });
+                gui.Invoke((MethodInvoker)delegate()
+                {
+                    gui.Close();
+                });
+            }
             return val;
+        }
+
+        private void runConsole(object thread)
+        {
+            consoleUI = new CodeConsoleUI((Thread)thread, this);
+            Application.Run((CodeConsoleUI)consoleUI);
         }
 
         private void runGUI(object thread)
         {
             gui = new CodeGUI((Thread)thread, this);
-            Application.Run((CodeGUI)gui);
+            while (true)
+            {
+                try
+                {
+                    Application.Run(gui);
+                    break;
+                }
+                catch (Exception)
+                {
+
+                }
+            }
         }
 
         public void Dispose()
@@ -292,9 +336,9 @@ namespace Lang.language
                 Statement stat = (Statement)node.statements[i];
                 if (breakpoints.Contains(stat.token.line) && stat.token.file == FileName)
                 {
-                    gui.Invoke((MethodInvoker)delegate()
+                    consoleUI.Invoke((MethodInvoker)delegate()
                     {
-                        gui.Debug((Hashtable)table[level], stat.token.line);
+                        consoleUI.Debug((Hashtable)table[level], stat.token.line);
                     });
                 }
                 LangObject ret = statDecider(stat);
@@ -372,6 +416,7 @@ namespace Lang.language
                 throw new Exception("Maximum recursion limit exceeded");
             }
             #region built in
+            #region Simple
             #region count
             if (stat.name == "count")
             {
@@ -470,6 +515,7 @@ namespace Lang.language
                 return new LangNumber(((LangString)obj).stringValue.Length, this);
             }
             #endregion
+            #endregion
             #region getPage
             else if (stat.name == "getPage")
             {
@@ -558,6 +604,7 @@ namespace Lang.language
                 return new LangNumber(Convert.ToInt32(process.Start()), this);
             }
             #endregion
+            #region Files
             #region getFile
             else if (stat.name == "getFile")
             {
@@ -621,6 +668,7 @@ namespace Lang.language
                 }
                 return new LangNumber(1, this);
             }
+            #endregion
             #endregion
             #region Image Operations
             #region getImage
@@ -704,7 +752,7 @@ namespace Lang.language
             #region newImage
             else if (stat.name == "newImage")
             {
-                checkParameterNumber("newImage", 6, stat);
+                checkParameterNumber("newImage", 5, stat);
                 LangObject _W, _H, _R, _G, _B;
                 _W = decider((Node)stat.parameters[0]);
                 _H = decider((Node)stat.parameters[1]);
@@ -841,7 +889,7 @@ namespace Lang.language
             else if (stat.name == "getImageWidth")
             {
                 checkParameterNumber("getImageWidth", 1, stat);
-                LangObject _img = (LangObject)stat.parameters[0];
+                LangObject _img = decider((Node)stat.parameters[0]);
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
@@ -856,7 +904,7 @@ namespace Lang.language
             else if (stat.name == "getImageHeight")
             {
                 checkParameterNumber("getImageHeight", 1, stat);
-                LangObject _img = (LangObject)stat.parameters[0];
+                LangObject _img = decider((Node)stat.parameters[0]);
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
@@ -1130,6 +1178,50 @@ namespace Lang.language
             }
             #endregion
             #endregion
+            #region Canvas Operations
+            #region drawOnCanvas
+            else if (stat.name == "drawOnCanvas")
+            {
+                checkParameterNumber("drawOnCanvas", 1, stat);
+                LangObject _img;
+                _img = decider((Node)stat.parameters[0]);
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                LangImage img = (LangImage)_img;
+                gui.Invoke((MethodInvoker)delegate()
+                {
+                    gui.drawImage(img.imageValue);
+                });
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #endregion
+            #region Events
+            #region registerHandler
+            else if (stat.name == "registerHandler")
+            {
+                checkParameterNumber("registerHandler", 2, stat);
+                LangObject _event, _handler;
+                _event = decider((Node)stat.parameters[0]);
+                _handler = decider((Node)stat.parameters[1]);
+                if (_event.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
+                }
+                if (_handler.objectType != ObjectType.CLASS)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'class', '" + Convert.ToString(_handler.objectType) + "' Found");
+                }
+                EventHandlers[((LangString)_event).stringValue] = _handler;
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #endregion
             #region getTypeName
             else if (stat.name == "getTypeName")
             {
@@ -1315,6 +1407,37 @@ namespace Lang.language
                     return statListDecider((StatementList)node);
             }
             return new LangNumber(0, this);
+        }
+
+        internal void EventHandler(string EventName, ArrayList parameters)
+        {
+            if (!EventHandlers.ContainsKey(EventName))
+            {
+                return;
+            }
+            if (EventHandlers[EventName] == null)
+            {
+                return;
+            }
+            LangClass handler = (LangClass)EventHandlers[EventName];
+            if (!handler.methods.ContainsKey(EventName))
+            {
+                throw new Exception("Class type '" + handler.name + "' assigned for handling '" + EventName + "' event doesn't contain the handler method!");
+            }
+            ArrayList newParameters = new ArrayList();
+            foreach (Object obj in parameters)
+            {
+                if (obj is Int32)
+                {
+                    newParameters.Add(new LangNumber((int)obj, this));
+                }
+                else if (obj is String)
+                {
+                    newParameters.Add(new LangString((string)obj, this));
+                }
+            }
+            FunctionCallStatement stat = new FunctionCallStatement(EventName, newParameters, new Token("", TokenType.AND, -1, "", 0, 0));
+            RunClassFunction((ArrayList)handler.methods[EventName], stat, handler, newParameters);
         }
         #endregion
 
@@ -1873,6 +1996,10 @@ namespace Lang.language
             level++;
             if (level >= table.Count)
                 table.Add(new Hashtable());
+            foreach (string global in _function.globals)
+            {
+                ((Hashtable)table[level])[global] = ((Hashtable)table[level - 1])[global];
+            }
             for (int i = 0; i < _call.parameters.Count; i++)
             {
                 LangObject ret = (LangObject)alreadyCalcd[i];
@@ -1987,9 +2114,9 @@ namespace Lang.language
             {
                 output = Convert.ToString(((LangNumber)val).numberValue);
             }
-            gui.Invoke((MethodInvoker)delegate()
+            consoleUI.Invoke((MethodInvoker)delegate()
             {
-                gui.printLine(output);
+                consoleUI.printLine(output);
             });
             foreach (PrintStatement stat in _node.extras)
             {
@@ -2004,21 +2131,21 @@ namespace Lang.language
             ScanStatement _node = (ScanStatement)node;
             if (_node.scanType != null && _node.scanType.name == "line")
             {
-                gui.Invoke((MethodInvoker)delegate()
+                consoleUI.Invoke((MethodInvoker)delegate()
                 {
-                    gui.getLine();
+                    consoleUI.getLine();
                 });
                 Thread.Sleep(10);
             }
             else
             {
-                gui.Invoke((MethodInvoker)delegate()
+                consoleUI.Invoke((MethodInvoker)delegate()
                 {
-                    gui.getNextToken();
+                    consoleUI.getNextToken();
                 });
                 Thread.Sleep(10);
             }
-            string sc = gui.lastRequestedString;
+            string sc = consoleUI.lastRequestedString;
             if (_node.scanType == null)
             {
                 double res = 0;
