@@ -34,6 +34,10 @@ namespace Lang.Language
             CodeLineNumberer.BackgroundGradient_AlphaColor = SystemColors.Control;
             CodeLineNumberer.BackgroundGradient_BetaColor = SystemColors.Control;
             CodeLineNumberer.BreakPoints = _handler.breakpoints;
+            CodeLineNumberer.BorderLines_Color = SystemColors.Control;
+            CodeLineNumberer.GridLines_Color = SystemColors.Control;
+            CodeLineNumberer.MarginLines_Color = SystemColors.Control;
+            CodeLineNumberer.LineNrs_LeadingZeroes = false;
             CodeLineNumberer.Refresh();
         }
 
@@ -94,19 +98,24 @@ namespace Lang.Language
             int lastbn = consoleRTB.Text.LastIndexOf('\n');
             if(lastbn < 0)
                 lastbn = 0;
-            consoleRTB.SelectionStart = lastbn;
+            consoleRTB.SelectionStart = lastbn + 1;
             consoleRTB.SelectionLength = 0;
-            consoleRTB.SelectedText = "\n" + _line + "\n";
+            consoleRTB.SelectedText = _line + "\n";
+            consoleRTB.SelectionStart = consoleRTB.Text.Length;
         }
 
         private void consoleRTB_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                int LineStart = consoleRTB.Text.LastIndexOf('\n');
-                if (LineStart < 0)
+                int LineStart = consoleRTB.Text.LastIndexOf('\n') + 1;
+                if (LineStart - 1 < 0)
                     LineStart = 0;
                 lines.Add(consoleRTB.Text.Substring(LineStart) + "\n");
+                consoleRTB.SelectionStart = consoleRTB.Text.Length;
+                consoleRTB.SelectionLength = 0;
+                consoleRTB.SelectedText = "\n";
+                e.SuppressKeyPress = true;
                 if (TokenRequsted)
                 {
                     getNextToken();
@@ -289,6 +298,19 @@ namespace Lang.Language
                 codeRTB.Visible = false;
                 CodeLineNumberer.Visible = false;
             }
+        }
+
+        private void CodeGUI_Resize(object sender, EventArgs e)
+        {
+            codeRTB.Size = new Size((this.Size.Width - 54) / 2, codeRTB.Size.Height);
+            consoleRTB.Size = new Size(codeRTB.Size.Width, consoleRTB.Size.Height);
+            DebugTV.Location = new Point(codeRTB.Location.X + codeRTB.Size.Width + 6, DebugTV.Location.Y);
+            DebugTV.Size = new Size(codeRTB.Size.Width, DebugTV.Size.Height);
+            SwitchButton.Location = new Point(codeRTB.Location.X + codeRTB.Size.Width - 75, SwitchButton.Location.Y);
+            ResumeButton.Location = new Point(DebugTV.Location.X, ResumeButton.Location.Y);
+            consoleRTB.Size = new Size(consoleRTB.Size.Width, this.Size.Height - 89);
+            codeRTB.Size = new Size(consoleRTB.Size.Width, consoleRTB.Size.Height);
+            DebugTV.Size = new Size(consoleRTB.Size.Width, consoleRTB.Size.Height);
         }
     }
 }

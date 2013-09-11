@@ -63,7 +63,7 @@ namespace Lang
             Run();
         }
 
-        #region Form1 Events
+        #region MainForm Events
         private void Form1_Load(object sender, EventArgs e)
         {
         }
@@ -77,6 +77,12 @@ namespace Lang
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             ButtonPressed(e);
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            RunButton.Location = new Point(this.Size.Width - 99, RunButton.Location.Y);
+            codeRTB.Size = new Size(this.Size.Width - 51, this.Size.Height - 128);
         }
         #endregion
 

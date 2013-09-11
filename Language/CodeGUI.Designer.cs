@@ -33,8 +33,8 @@
             this.DebugTV = new System.Windows.Forms.TreeView();
             this.ResumeButton = new System.Windows.Forms.Button();
             this.codeRTB = new System.Windows.Forms.RichTextBox();
-            this.CodeLineNumberer = new LineNumbers.LineNumbers_For_RichTextBox();
             this.SwitchButton = new System.Windows.Forms.Button();
+            this.CodeLineNumberer = new LineNumbers.LineNumbers_For_RichTextBox();
             this.SuspendLayout();
             // 
             // consoleRTB
@@ -61,7 +61,7 @@
             // 
             this.DebugTV.Location = new System.Drawing.Point(392, 38);
             this.DebugTV.Name = "DebugTV";
-            this.DebugTV.Size = new System.Drawing.Size(313, 442);
+            this.DebugTV.Size = new System.Drawing.Size(359, 442);
             this.DebugTV.TabIndex = 2;
             // 
             // ResumeButton
@@ -85,6 +85,16 @@
             this.codeRTB.Text = "";
             this.codeRTB.Visible = false;
             this.codeRTB.KeyDown += new System.Windows.Forms.KeyEventHandler(this.codeRTB_KeyDown);
+            // 
+            // SwitchButton
+            // 
+            this.SwitchButton.Location = new System.Drawing.Point(310, 12);
+            this.SwitchButton.Name = "SwitchButton";
+            this.SwitchButton.Size = new System.Drawing.Size(75, 23);
+            this.SwitchButton.TabIndex = 6;
+            this.SwitchButton.Text = "Switch View";
+            this.SwitchButton.UseVisualStyleBackColor = true;
+            this.SwitchButton.Click += new System.EventHandler(this.SwitchButton_Click);
             // 
             // CodeLineNumberer
             // 
@@ -124,21 +134,11 @@
             this.CodeLineNumberer.TabIndex = 5;
             this.CodeLineNumberer.Visible = false;
             // 
-            // SwitchButton
-            // 
-            this.SwitchButton.Location = new System.Drawing.Point(310, 12);
-            this.SwitchButton.Name = "SwitchButton";
-            this.SwitchButton.Size = new System.Drawing.Size(75, 23);
-            this.SwitchButton.TabIndex = 6;
-            this.SwitchButton.Text = "Switch View";
-            this.SwitchButton.UseVisualStyleBackColor = true;
-            this.SwitchButton.Click += new System.EventHandler(this.SwitchButton_Click);
-            // 
             // CodeGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(717, 492);
+            this.ClientSize = new System.Drawing.Size(756, 492);
             this.Controls.Add(this.SwitchButton);
             this.Controls.Add(this.CodeLineNumberer);
             this.Controls.Add(this.ResumeButton);
@@ -146,13 +146,12 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.consoleRTB);
             this.Controls.Add(this.codeRTB);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "CodeGUI";
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "CodeGUI";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CodeGUI_FormClosing);
+            this.Resize += new System.EventHandler(this.CodeGUI_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
