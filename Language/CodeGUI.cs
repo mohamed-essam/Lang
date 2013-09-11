@@ -96,7 +96,7 @@ namespace Lang.Language
                 lastbn = 0;
             consoleRTB.SelectionStart = lastbn;
             consoleRTB.SelectionLength = 0;
-            consoleRTB.SelectedText = "\n" + _line;
+            consoleRTB.SelectedText = "\n" + _line + "\n";
         }
 
         private void consoleRTB_KeyDown(object sender, KeyEventArgs e)
