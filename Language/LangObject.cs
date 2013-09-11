@@ -19,10 +19,12 @@ namespace Lang.language
     public abstract class LangObject
     {
         public ObjectType objectType;
+        internal Interpreter handler;
 
-        public LangObject(ObjectType _objectType)
+        public LangObject(ObjectType _objectType, Interpreter _handler)
         {
             objectType = _objectType;
+            handler = _handler;
         }
 
         #region Mathematical Operators
@@ -65,8 +67,8 @@ namespace Lang.language
     {
         public double numberValue;
 
-        public LangNumber(double _numberValue)
-            : base(ObjectType.NUMBER)
+        public LangNumber(double _numberValue, Interpreter _inter)
+            : base(ObjectType.NUMBER, _inter)
         {
             numberValue = _numberValue;
         }
@@ -78,7 +80,7 @@ namespace Lang.language
                 case ObjectType.STRING:
                     return ((LangString)(other)).Multiply(this);
                 case ObjectType.NUMBER:
-                    return new LangNumber(numberValue * ((LangNumber)(other)).numberValue);
+                    return new LangNumber(numberValue * ((LangNumber)(other)).numberValue, handler);
                 default:
                     throw new InvalidOperationException("Invalid operation 'number' * '" + Convert.ToString(other.objectType) + "'");
             }
@@ -89,7 +91,7 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.NUMBER:
-                    return new LangNumber(numberValue / ((LangNumber)(other)).numberValue);
+                    return new LangNumber(numberValue / ((LangNumber)(other)).numberValue, handler);
                 default:
                     throw new InvalidOperationException("Invalid operation 'number' / '" + Convert.ToString(other.objectType) + "'");
             }
@@ -100,9 +102,9 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.STRING:
-                    return new LangString(Convert.ToString(numberValue) + ((LangString)(other)).stringValue);
+                    return new LangString(Convert.ToString(numberValue) + ((LangString)(other)).stringValue, handler);
                 case ObjectType.NUMBER:
-                    return new LangNumber(numberValue + ((LangNumber)(other)).numberValue);
+                    return new LangNumber(numberValue + ((LangNumber)(other)).numberValue, handler);
                 default:
                     throw new InvalidOperationException("Invalid operation 'number' + '" + Convert.ToString(other.objectType) + "'");
             }
@@ -113,7 +115,7 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.NUMBER:
-                    return new LangNumber(numberValue - ((LangNumber)(other)).numberValue);
+                    return new LangNumber(numberValue - ((LangNumber)(other)).numberValue, handler);
                 default:
                     throw new InvalidOperationException("Invalid operation 'number' - '" + Convert.ToString(other.objectType) + "'");
             }
@@ -124,7 +126,7 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.NUMBER:
-                    return new LangNumber(Math.Pow(numberValue, ((LangNumber)(other)).numberValue));
+                    return new LangNumber(Math.Pow(numberValue, ((LangNumber)(other)).numberValue), handler);
                 default:
                     throw new InvalidOperationException("Invalid operation 'number' ^ '" + Convert.ToString(other.objectType) + "'");
             }
@@ -134,7 +136,7 @@ namespace Lang.language
         {
             if (other.objectType == ObjectType.NUMBER)
             {
-                return new LangNumber(numberValue % ((LangNumber)other).numberValue);
+                return new LangNumber(numberValue % ((LangNumber)other).numberValue, handler);
             }
             throw new InvalidOperationException("Invalid operation 'number' % '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
@@ -152,7 +154,7 @@ namespace Lang.language
 
         public override LangObject Clone()
         {
-            return new LangNumber(numberValue);
+            return new LangNumber(numberValue, handler);
         }
     }
 
@@ -160,8 +162,8 @@ namespace Lang.language
     {
         public string stringValue;
 
-        public LangString(string _stringValue)
-            : base(ObjectType.STRING)
+        public LangString(string _stringValue, Interpreter _inter)
+            : base(ObjectType.STRING, _inter)
         {
             stringValue = _stringValue;
         }
@@ -171,9 +173,9 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.STRING:
-                    return new LangString(stringValue + ((LangString)other).stringValue);
+                    return new LangString(stringValue + ((LangString)other).stringValue, handler);
                 case ObjectType.NUMBER:
-                    return new LangString(stringValue + Convert.ToString(((LangNumber)other).numberValue));
+                    return new LangString(stringValue + Convert.ToString(((LangNumber)other).numberValue), handler);
                 default:
                     throw new InvalidOperationException("Invalid operation '" + Convert.ToString(this.objectType) + "' + '" + Convert.ToString(other.objectType) + "'");
             }
@@ -204,7 +206,7 @@ namespace Lang.language
                 {
                     _otherValue += stringValue;
                 }
-                return new LangString(_otherValue);
+                return new LangString(_otherValue, handler);
             }
             else
             {
@@ -241,7 +243,7 @@ namespace Lang.language
 
         public override LangObject Clone()
         {
-            return new LangString(stringValue);
+            return new LangString(stringValue, handler);
         }
     }
 
@@ -249,8 +251,8 @@ namespace Lang.language
     {
         public Hashtable arrayValue;
 
-        public LangMap(Hashtable _arrayValue)
-            : base(ObjectType.MAP)
+        public LangMap(Hashtable _arrayValue, Interpreter _inter)
+            : base(ObjectType.MAP, _inter)
         {
             arrayValue = _arrayValue;
         }
@@ -306,7 +308,7 @@ namespace Lang.language
             {
                 arrVal[dic.Key] = ((LangObject)dic.Value).Clone();
             }
-            return new LangMap(arrVal);
+            return new LangMap(arrVal, handler);
         }
     }
 
@@ -315,14 +317,14 @@ namespace Lang.language
         public string message;
         public LangObject optionalMessage;
 
-        public LangState(string _message)
-            : base(ObjectType.STATE)
+        public LangState(string _message, Interpreter _inter)
+            : base(ObjectType.STATE, _inter)
         {
             message = _message;
         }
 
-        public LangState(string _message, LangObject _optional)
-            : base(ObjectType.STATE)
+        public LangState(string _message, LangObject _optional, Interpreter _inter)
+            : base(ObjectType.STATE, _inter)
         {
             message = _message;
             optionalMessage = _optional;
@@ -372,13 +374,13 @@ namespace Lang.language
         public ArrayList constructors;
         public string name;
 
-        public LangClass(ArrayList _vars, ArrayList _methods, ArrayList _constructor, string _name)
-            : base(ObjectType.CLASS)
+        public LangClass(ArrayList _vars, ArrayList _methods, ArrayList _constructor, string _name, Interpreter _inter)
+            : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
             foreach (string varia in _vars)
             {
-                vars[varia] = new LangNumber(0);
+                vars[varia] = new LangNumber(0, handler);
             }
             methods = new Hashtable();
             foreach (FunctionStatement func in _methods)
@@ -389,8 +391,8 @@ namespace Lang.language
             name = _name;
         }
 
-        public LangClass(Hashtable _vars, Hashtable _methods, ArrayList _constructor, string _name)
-            : base(ObjectType.CLASS)
+        public LangClass(Hashtable _vars, Hashtable _methods, ArrayList _constructor, string _name, Interpreter _inter)
+            : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
             foreach (DictionaryEntry varia in _vars)
@@ -406,13 +408,13 @@ namespace Lang.language
             name = _name;
         }
 
-        public LangClass(ClassStatement _stat, ClassInitStatement _call)
-            : base(ObjectType.CLASS)
+        public LangClass(ClassStatement _stat, ClassInitStatement _call, Interpreter _inter)
+            : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
             foreach (string str in _stat.vars)
             {
-                vars[str] = new LangNumber(0);
+                vars[str] = new LangNumber(0, handler);
             }
             methods = _stat.methods;
             constructors = _stat.constructors;
@@ -426,7 +428,7 @@ namespace Lang.language
             {
                 _vars[dic.Key] = ((LangObject)dic.Value).Clone();
             }
-            return new LangClass(_vars, methods, constructors, name);
+            return new LangClass(_vars, methods, constructors, name, handler);
         }
 
         public override LangObject Plus(LangObject other)
@@ -442,8 +444,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_plus"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_plus"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -463,8 +465,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_minus"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_minus"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -484,8 +486,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_divide"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_divide"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -505,8 +507,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_multiply"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_multiply"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -526,8 +528,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_power"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_power"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -547,8 +549,8 @@ namespace Lang.language
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
-                FunctionStatement stat = (FunctionStatement)this.methods["__operator_mod"];
-                return Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                FunctionStatement stat = (FunctionStatement)((ArrayList)this.methods["__operator_mod"])[0];
+                return handler.RunClassOperator(stat, this, right);
             }
             else
             {
@@ -570,7 +572,7 @@ namespace Lang.language
             if (this.methods.ContainsKey("__operator_smaller"))
             {
                 FunctionStatement stat = (FunctionStatement)(((ArrayList)this.methods["__operator_smaller"])[0]);
-                LangObject obj = Form1.langManager.interpreter.RunClassOperator(stat, this, right);
+                LangObject obj = handler.RunClassOperator(stat, this, right);
                 if (obj.objectType == ObjectType.NUMBER)
                 {
                     return (((LangNumber)obj).numberValue == 1);
@@ -591,15 +593,15 @@ namespace Lang.language
     {
         internal Bitmap imageValue;
 
-        public LangImage(Bitmap _imageValue)
-            : base(ObjectType.IMAGE)
+        public LangImage(Bitmap _imageValue, Interpreter _inter)
+            : base(ObjectType.IMAGE, _inter)
         {
             imageValue = _imageValue;
         }
 
         public override LangObject Clone()
         {
-            return new LangImage(new Bitmap(imageValue));
+            return new LangImage(new Bitmap(imageValue), handler);
         }
 
         public override LangObject Divide(LangObject other)

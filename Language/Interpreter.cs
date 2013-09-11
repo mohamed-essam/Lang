@@ -7,7 +7,8 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Drawing;
-using System.Diagnostics;
+using Lang.Language;
+using System.Windows.Forms;
 
 namespace Lang.language
 {
@@ -38,22 +39,21 @@ namespace Lang.language
         internal bool isStopped = false;
         internal int stoppedLine;
         internal string FileName;
-        LangConsole console;
         LangManager langManager;
         internal ArrayList StackTrace;
         private string lastFunctionCalled = "__MAIN__";
+        CodeGUI gui;
 
         /// <summary>
         /// Creates a new Interpeter object
         /// </summary>
         /// <param name="_console">The LangConsole this code will read/write</param>
         /// <param name="_langManager">The LangManager that created this instance, for error reporting</param>
-        public Interpreter(LangConsole _console, LangManager _langManager)
+        public Interpreter(LangManager _langManager)
         {
             table = new ArrayList();
             functions = new Hashtable();
             classes = new Hashtable();
-            console = _console;
             breakpoints = new ArrayList();
             StackTrace = new ArrayList();
             langManager = _langManager;
@@ -94,6 +94,7 @@ namespace Lang.language
                     ClassDefine((ClassStatement)statement);
                 }
             }
+            #region Inhertiance
             Hashtable newClasses = new Hashtable();
             foreach (DictionaryEntry dic in classes)
             {
@@ -179,13 +180,43 @@ namespace Lang.language
                 cs.constructors = ((ClassStatement)dic.Value).constructors;
                 newClasses[dic.Key] = cs;
             }
+#endregion
             classes = newClasses;
             level = 0;
             table.Clear();
             table.Add(new Hashtable());
             keepWorking = true;
-            LangObject val = statListDecider(root);
+            //gui = new CodeGUI(Thread.CurrentThread);
+            Thread thread = new Thread(new ParameterizedThreadStart(runGUI));
+            gui = null;
+            thread.Start(Thread.CurrentThread);
+            while (gui == null || !gui.IsHandleCreated)
+            {
+                Thread.Sleep(1);
+            }
+            LangObject val = null;
+            try
+            {
+                val = statListDecider(root);
+            }
+            catch (Exception e)
+            {
+                gui.Invoke((MethodInvoker)delegate() {
+                    gui.HandleExceptions(e, langManager.lastErrorToken, StackTrace);
+                });
+                return val;
+            }
+            gui.Invoke((MethodInvoker)delegate()
+            {
+                gui.Close();
+            });
             return val;
+        }
+
+        private void runGUI(object thread)
+        {
+            gui = new CodeGUI((Thread)thread, this);
+            Application.Run((CodeGUI)gui);
         }
 
         public void Dispose()
@@ -256,15 +287,16 @@ namespace Lang.language
         LangObject statListDecider(StatementList node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             for(int i = 0; i < node.statements.Count; i++)
             {
                 Statement stat = (Statement)node.statements[i];
                 if (breakpoints.Contains(stat.token.line) && stat.token.file == FileName)
                 {
-                    isStopped = true;
-                    stoppedLine = stat.token.startIndex;
-                    Thread.CurrentThread.Suspend();
+                    gui.Invoke((MethodInvoker)delegate()
+                    {
+                        gui.Debug((Hashtable)table[level]);
+                    });
                 }
                 LangObject ret = statDecider(stat);
                 if (ret.objectType == ObjectType.STATE)
@@ -277,13 +309,13 @@ namespace Lang.language
                 }
 
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
 
         LangObject statDecider(Statement node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             switch (node.type)
             {
                 case StatementType.BIND:
@@ -299,13 +331,13 @@ namespace Lang.language
                 case StatementType.WHILE:
                     return whileStatInterpret(node);
                 case StatementType.BREAK:
-                    return new LangState("break");
+                    return new LangState("break", this);
                 case StatementType.CONTINUE:
-                    return new LangState("continue");
+                    return new LangState("continue", this);
                 case StatementType.STOP:
-                    return new LangState("stop");
+                    return new LangState("stop", this);
                 case StatementType.RETURN:
-                    return new LangState("return", decider(((ReturnStatement)node).expr));
+                    return new LangState("return", decider(((ReturnStatement)node).expr), this);
                 case StatementType.FUNCTION_CALL:
                     return function_decide(node);
                 case StatementType.IMPORT:
@@ -327,13 +359,13 @@ namespace Lang.language
                 case StatementType.TRY:
                     return tryStatInterpret(node);
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
 
         LangObject function_decide(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             FunctionCallStatement stat = (FunctionCallStatement)node;
             if (level > 5000)
             {
@@ -368,7 +400,7 @@ namespace Lang.language
                 {
                     throw new Exception("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map'");
                 }
-                return new LangNumber(((LangMap)ret).arrayValue.Count);
+                return new LangNumber(((LangMap)ret).arrayValue.Count, this);
             }
             #endregion
             #region int
@@ -378,7 +410,7 @@ namespace Lang.language
                 LangObject expr = decider((Node)stat.parameters[0]);
                 if (expr.objectType == ObjectType.NUMBER)
                 {
-                    return new LangNumber((int)((LangNumber)expr).numberValue);
+                    return new LangNumber((int)((LangNumber)expr).numberValue, this);
                 }
                 if (expr.objectType == ObjectType.STRING)
                 {
@@ -386,7 +418,7 @@ namespace Lang.language
                     double val_;
                     if (double.TryParse(val, out val_))
                     {
-                        return new LangNumber((int)val_);
+                        return new LangNumber((int)val_, this);
                     }
                     langManager.lastErrorToken = ((Node)stat.parameters[0]).token;
                     throw new InvalidCastException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Invalid number format");
@@ -409,7 +441,7 @@ namespace Lang.language
                     case ObjectType.STRING:
                         return expr;
                     case ObjectType.NUMBER:
-                        return new LangString(Convert.ToString(((LangNumber)expr).numberValue));
+                        return new LangString(Convert.ToString(((LangNumber)expr).numberValue), this);
                     case ObjectType.ARRAY:
                         throw new NotImplementedException();
                     case ObjectType.MAP:
@@ -424,7 +456,7 @@ namespace Lang.language
             else if (stat.name == "map")
             {
                 checkParameterNumber("map", 0, stat);
-                return new LangMap(new Hashtable());
+                return new LangMap(new Hashtable(), this);
             }
             #endregion
             #region strlen
@@ -436,7 +468,7 @@ namespace Lang.language
                 {
                     throw new Exception("Line " + stat.token.line + ": " + "Function 'strlen' expects parameter 1 to be 'string', " + Convert.ToString(obj.objectType) + " Found");
                 }
-                return new LangNumber(((LangString)obj).stringValue.Length);
+                return new LangNumber(((LangString)obj).stringValue.Length, this);
             }
             #endregion
             #region getPage
@@ -452,7 +484,7 @@ namespace Lang.language
                 WebClient client = new WebClient();
                 string ret = client.DownloadString(((LangString)param).stringValue);
                 client.Dispose();
-                return new LangString(ret);
+                return new LangString(ret, this);
             }
             #endregion
             #region regexSearch
@@ -477,10 +509,10 @@ namespace Lang.language
                 MatchCollection col = Regex.Matches(searchIn, regexp);
                 foreach (Match mt in col)
                 {
-                    tbl[(double)tbl.Keys.Count] = new LangNumber(mt.Index);
-                    tbl[(double)tbl.Keys.Count] = new LangNumber(mt.Length);
+                    tbl[(double)tbl.Keys.Count] = new LangNumber(mt.Index, this);
+                    tbl[(double)tbl.Keys.Count] = new LangNumber(mt.Length, this);
                 }
-                return new LangMap(tbl);
+                return new LangMap(tbl, this);
             }
             #endregion
             #region cmd
@@ -499,7 +531,7 @@ namespace Lang.language
                 startInfo.FileName = "cmd.exe";
                 startInfo.Arguments = "/C " + ((LangString)param1).stringValue;
                 process.StartInfo = startInfo;
-                return new LangNumber(Convert.ToInt32(process.Start()));
+                return new LangNumber(Convert.ToInt32(process.Start()), this);
             }
             #endregion
             #region run
@@ -524,7 +556,7 @@ namespace Lang.language
                 startInfo.FileName = Directory.GetCurrentDirectory() + ((LangString)param1).stringValue;
                 startInfo.Arguments = ((LangString)param2).stringValue;
                 process.StartInfo = startInfo;
-                return new LangNumber(Convert.ToInt32(process.Start()));
+                return new LangNumber(Convert.ToInt32(process.Start()), this);
             }
             #endregion
             #region getFile
@@ -540,7 +572,7 @@ namespace Lang.language
                 string filePath = ((LangString)param1).stringValue;
                 if (File.Exists(filePath))
                 {
-                    return new LangString(File.ReadAllText(filePath));
+                    return new LangString(File.ReadAllText(filePath), this);
                 }
                 if (!filePath.Contains(":"))
                 {
@@ -554,7 +586,7 @@ namespace Lang.language
                     }
                     if (File.Exists(filePath))
                     {
-                        return new LangString(File.ReadAllText(filePath));
+                        return new LangString(File.ReadAllText(filePath), this);
                     }
                     else
                     {
@@ -586,9 +618,9 @@ namespace Lang.language
                 }
                 catch (Exception)
                 {
-                    return new LangNumber(0);
+                    return new LangNumber(0, this);
                 }
-                return new LangNumber(1);
+                return new LangNumber(1, this);
             }
             #endregion
             #region Image Operations
@@ -626,7 +658,7 @@ namespace Lang.language
                 {
                     img = new Bitmap(fs);
                 }
-                LangImage ret = new LangImage(img);
+                LangImage ret = new LangImage(img, this);
                 return ret;
             }
             #endregion
@@ -665,9 +697,9 @@ namespace Lang.language
                 }
                 catch (Exception)
                 {
-                    return new LangNumber(0);
+                    return new LangNumber(0, this);
                 }
-                return new LangNumber(1);
+                return new LangNumber(1, this);
             }
             #endregion
             #region setImagePixel
@@ -720,7 +752,7 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B;
                 img.imageValue.SetPixel((int)X.numberValue, (int)Y.numberValue, Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
-                return new LangNumber(1);
+                return new LangNumber(1, this);
             }
             #endregion
             #region getImagePixel
@@ -750,10 +782,10 @@ namespace Lang.language
                 LangNumber X = (LangNumber)_X,
                            Y = (LangNumber)_Y;
                 Hashtable tbl = new Hashtable();
-                tbl[0.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R);
-                tbl[1.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G);
-                tbl[2.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B);
-                return new LangMap(tbl);
+                tbl[0.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R, this);
+                tbl[1.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G, this);
+                tbl[2.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B, this);
+                return new LangMap(tbl, this);
             }
             #endregion
             #region getImageWidth
@@ -768,7 +800,7 @@ namespace Lang.language
                 }
                 LangImage img = (LangImage)_img;
 
-                return new LangNumber(img.imageValue.Width);
+                return new LangNumber(img.imageValue.Width, this);
             }
             #endregion
             #region getImageHeight
@@ -783,7 +815,7 @@ namespace Lang.language
                 }
                 LangImage img = (LangImage)_img;
 
-                return new LangNumber(img.imageValue.Height);
+                return new LangNumber(img.imageValue.Height, this);
             }
             #endregion
             #region drawImageLine
@@ -859,7 +891,7 @@ namespace Lang.language
                 var graphics = Graphics.FromImage(img.imageValue);
                 Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
                 graphics.DrawLine(pen, new Point((int)X1.numberValue, (int)Y1.numberValue), new Point((int)X2.numberValue, (int)Y2.numberValue));
-                return new LangNumber(0);
+                return new LangNumber(0, this);
             }
             #endregion
             #region drawImageRectangle
@@ -938,7 +970,7 @@ namespace Lang.language
                 Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
                 Rectangle rect = new Rectangle(start, size);
                 graphics.DrawRectangle(pen, rect);
-                return new LangNumber(0);
+                return new LangNumber(0, this);
             }
             #endregion
             #region drawImageFilledRectangle
@@ -1039,7 +1071,7 @@ namespace Lang.language
                 Rectangle rect = new Rectangle(start, size);
                 graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue, (int)G2.numberValue, (int)B2.numberValue)), rect);
                 graphics.DrawRectangle(pen, rect);
-                return new LangNumber(0);
+                return new LangNumber(0, this);
             }
             #endregion
             #endregion
@@ -1053,14 +1085,14 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'class', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
-                return new LangString(((LangClass)param1).name);
+                return new LangString(((LangClass)param1).name, this);
             }
             #endregion
             #region getCurrentDirectory
             else if (stat.name == "getCurrentDirectory")
             {
                 checkParameterNumber("getCurrentDirectory", 0, stat);
-                return new LangString(Directory.GetCurrentDirectory());
+                return new LangString(Directory.GetCurrentDirectory(), this);
             }
             #endregion
             #endregion
@@ -1168,7 +1200,7 @@ namespace Lang.language
                     }
                     else
                     {
-                        return new LangNumber(0);
+                        return new LangNumber(0, this);
                     }
                 }
                 return obj2;
@@ -1179,7 +1211,7 @@ namespace Lang.language
         LangObject decider(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             switch (node.nodeType)
             {
                 case NodeType.DIV:
@@ -1227,7 +1259,7 @@ namespace Lang.language
                 case NodeType.STATEMENT_LIST:
                     return statListDecider((StatementList)node);
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
         #endregion
 
@@ -1241,7 +1273,7 @@ namespace Lang.language
             {
                 LangObject obj1 = decider(_node.left);
                 LangObject obj2 = decider(_node.right);
-                return new LangNumber(Convert.ToInt32(obj1.Greater(obj2)));
+                return new LangNumber(Convert.ToInt32(obj1.Greater(obj2)), this);
             }
             catch (Exception)
             {
@@ -1254,7 +1286,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             try
             {
-                return new LangNumber(Convert.ToInt32(decider(_node.left).Smaller(decider(_node.right))));
+                return new LangNumber(Convert.ToInt32(decider(_node.left).Smaller(decider(_node.right))), this);
             }
             catch (Exception)
             {
@@ -1267,7 +1299,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             try
             {
-                return new LangNumber(Convert.ToInt32(decider(_node.left).Equal(decider(_node.right))));
+                return new LangNumber(Convert.ToInt32(decider(_node.left).Equal(decider(_node.right))), this);
             }
             catch (Exception)
             {
@@ -1280,7 +1312,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             try
             {
-                return new LangNumber(Convert.ToInt32(decider(_node.left).GreaterEqual(decider(_node.right))));
+                return new LangNumber(Convert.ToInt32(decider(_node.left).GreaterEqual(decider(_node.right))), this);
             }
             catch (Exception)
             {
@@ -1293,7 +1325,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             try
             {
-                return new LangNumber(Convert.ToInt32(decider(_node.left).Smaller(decider(_node.right))));
+                return new LangNumber(Convert.ToInt32(decider(_node.left).Smaller(decider(_node.right))), this);
             }
             catch (Exception)
             {
@@ -1306,7 +1338,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             try
             {
-                return new LangNumber(Convert.ToInt32(decider(_node.left).NotEqual(decider(_node.right))));
+                return new LangNumber(Convert.ToInt32(decider(_node.left).NotEqual(decider(_node.right))), this);
             }
             catch (Exception)
             {
@@ -1325,7 +1357,7 @@ namespace Lang.language
             _right = decider(_node.right);
             if (_left.objectType == ObjectType.NUMBER && _right.objectType == ObjectType.NUMBER)
             {
-                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0.0 && ((LangNumber)_right).numberValue != 0.0));
+                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0.0 && ((LangNumber)_right).numberValue != 0.0), this);
             }
             langManager.lastErrorToken = node.token;
             throw new InvalidOperationException("Invalid operation '" + Convert.ToString(_left.objectType) + "' & '" + Convert.ToString(_right.objectType) + "'");
@@ -1338,7 +1370,7 @@ namespace Lang.language
             _right = decider(_node.right);
             if (_left.objectType == ObjectType.NUMBER && _right.objectType == ObjectType.NUMBER)
             {
-                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0 || ((LangNumber)_right).numberValue != 0));
+                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0 || ((LangNumber)_right).numberValue != 0), this);
             }
             langManager.lastErrorToken = node.token;
             throw new InvalidOperationException("Invalid operation '" + Convert.ToString(_left.objectType) + "' | '" + Convert.ToString(_right.objectType) + "'");
@@ -1379,7 +1411,7 @@ namespace Lang.language
             LangNumber val = (LangNumber)decider(_node.right);
             try
             {
-                return new LangNumber(Math.Floor(((LangNumber)decider(_node.left).Divide(val)).numberValue));
+                return new LangNumber(Math.Floor(((LangNumber)decider(_node.left).Divide(val)).numberValue), this);
             }
             catch (Exception)
             {
@@ -1448,9 +1480,9 @@ namespace Lang.language
             {
                 LangObject obj = decider(node);
                 if (obj == null)
-                    return obj = new LangMap(new Hashtable());
+                    return obj = new LangMap(new Hashtable(), this);
                 if (obj.objectType != ObjectType.MAP && obj.objectType != ObjectType.STRING)
-                    return obj = new LangMap(new Hashtable());
+                    return obj = new LangMap(new Hashtable(), this);
                 return obj;
             }
             BinaryOperator _node = (BinaryOperator)node;
@@ -1468,7 +1500,12 @@ namespace Lang.language
                 LangNumber _right_num = (LangNumber)_right;
                 if (_left.objectType == ObjectType.STRING)
                 {
-                    retobj = (LangObject)(new LangString("" + ((LangString)_left).stringValue[(int)_right_num.numberValue]));
+                    if (((LangString)_left).stringValue.Length <= (int)_right_num.numberValue || (int)_right_num.numberValue < 0)
+                    {
+                        langManager.lastErrorToken = node.token;
+                        throw new Exception("Line " + node.token.line + ": " + "String subscript out of bounds!");
+                    }
+                    retobj = (LangObject)(new LangString("" + ((LangString)_left).stringValue[(int)_right_num.numberValue], this));
                 }
                 else
                 {
@@ -1492,11 +1529,11 @@ namespace Lang.language
                 {
                     if (_right.objectType == ObjectType.NUMBER)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangNumber)_right).numberValue] = new LangMap(new Hashtable())));
+                        return ((LangObject)(((LangMap)_left).arrayValue[((LangNumber)_right).numberValue] = new LangMap(new Hashtable(), this)));
                     }
                     else if (_right.objectType == ObjectType.STRING)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangString)_right).stringValue] = new LangMap(new Hashtable())));
+                        return ((LangObject)(((LangMap)_left).arrayValue[((LangString)_right).stringValue] = new LangMap(new Hashtable(), this)));
                     }
                 }
                 else
@@ -1535,7 +1572,7 @@ namespace Lang.language
                     x[(int)((LangNumber)_right).numberValue] = ((LangString)_val).stringValue[0];
                     inp = new string(x);
                     ((LangString)_left).stringValue = inp;
-                    return new LangString("" + ((LangString)_val).stringValue[0]);
+                    return new LangString("" + ((LangString)_val).stringValue[0], this);
                 }
             }
             return retobj;
@@ -1617,7 +1654,7 @@ namespace Lang.language
         LangObject RunClassFunction(FunctionStatement _function, FunctionCallStatement _call, LangClass _class, ArrayList alreadyCalcd = null)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             if (_function.parameters.Count != _call.parameters.Count)
             {
                 switch (_function.parameters.Count)
@@ -1715,7 +1752,7 @@ namespace Lang.language
         LangObject RunClassFunction(ArrayList _functions, FunctionCallStatement _call, LangClass _class, ArrayList alreadyCalcd = null)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             FunctionStatement _function = null;
             if (alreadyCalcd == null)
             {
@@ -1807,7 +1844,7 @@ namespace Lang.language
         public LangObject RunClassOperator(FunctionStatement _function, LangClass _first, LangClass _second)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             Parameter param = (Parameter)_function.parameters[0];
             increaseLevel();
             ((Hashtable)table[level]).Clear();
@@ -1836,11 +1873,11 @@ namespace Lang.language
         LangObject numInterpret(Node node)
         {
             Number _node = (Number)node;
-            return new LangNumber(Convert.ToDouble(_node.value));
+            return new LangNumber(Convert.ToDouble(_node.value), this);
         }
         LangObject stringInterpret(Node node)
         {
-            return new LangString(((StringVal)(node)).val);
+            return new LangString(((StringVal)(node)).val, this);
         }
         LangObject idInterpret(Node node)
         {
@@ -1862,7 +1899,7 @@ namespace Lang.language
         LangObject bindStatInterpret(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             BindStatement _node = (BindStatement)node;
             LangObject val = decider(_node.expr);
             if (_node.Id.nodeType == NodeType.ID)
@@ -1883,7 +1920,7 @@ namespace Lang.language
         LangObject printStatInterpret(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             PrintStatement _node = (PrintStatement)node;
             LangObject val = decider(_node.expr);
             string output = "";
@@ -1895,7 +1932,10 @@ namespace Lang.language
             {
                 output = Convert.ToString(((LangNumber)val).numberValue);
             }
-            console.print(output);
+            gui.Invoke((MethodInvoker)delegate()
+            {
+                gui.printLine(output);
+            });
             foreach (PrintStatement stat in _node.extras)
             {
                 printStatInterpret(stat);
@@ -1905,66 +1945,131 @@ namespace Lang.language
         LangObject scanStatInterpret(Statement node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             ScanStatement _node = (ScanStatement)node;
-            string sc = console.scan();
-            ObjectType type = ObjectType.STRING;
-            bool Successful = true;
-            if (sc.Length == 0)
+            if (_node.scanType != null && _node.scanType.name == "line")
             {
-                Successful = false;
-                sc = "0";
+                gui.Invoke((MethodInvoker)delegate()
+                {
+                    gui.getLine();
+                });
+                Thread.Sleep(10);
             }
-            else if (_node.scanType != null)
+            else
             {
-                if (_node.scanType.name == "number")
+                gui.Invoke((MethodInvoker)delegate()
                 {
-                    type = ObjectType.NUMBER;
-                    double o;
-                    if (!double.TryParse(sc, out o))
-                    {
-                        langManager.lastErrorToken = node.token;
-                        throw new Exception("Line " + node.token.line + ": " + "Invalid number format!");
-                    }
+                    gui.getNextToken();
+                });
+                Thread.Sleep(10);
+            }
+            string sc = gui.lastRequestedString;
+            if (_node.scanType == null)
+            {
+                double res = 0;
+                if (Double.TryParse(sc, out res))
+                {
+                    return new LangNumber(res, this);
                 }
-                else if (_node.scanType.name == "integer")
+                else
                 {
-                    type = ObjectType.NUMBER;
-                    double o;
-                    if (!double.TryParse(sc, out o))
+                    return new LangString(sc, this);
+                }
+            }
+            else if (_node.scanType.name == "line")
+            {
+                if (_node.expr.nodeType == NodeType.ID)
+                {
+                    ((Hashtable)table[level])[((ID)_node.expr).name] = new LangString(sc, this);
+                }
+                else if (_node.expr.nodeType == NodeType.BRACKETS)
+                {
+                    BracketsInterpret(_node.expr, new LangString(sc, this));
+                }
+                else if (_node.expr.nodeType == NodeType.DOT)
+                {
+                    DotInterpret(_node.expr, new LangString(sc, this));
+                }
+                return new LangString(sc, this);
+            }
+            else if (_node.scanType.name == "string")
+            {
+                if (_node.expr.nodeType == NodeType.ID)
+                {
+                    ((Hashtable)table[level])[((ID)_node.expr).name] = new LangString(sc, this);
+                }
+                else if (_node.expr.nodeType == NodeType.BRACKETS)
+                {
+                    BracketsInterpret(_node.expr, new LangString(sc, this));
+                }
+                else if (_node.expr.nodeType == NodeType.DOT)
+                {
+                    DotInterpret(_node.expr, new LangString(sc, this));
+                }
+
+                return new LangString(sc, this);
+            }
+            else if (_node.scanType.name == "integer")
+            {
+                double res = 0;
+                if (Double.TryParse(sc, out res))
+                {
+                    if (_node.expr.nodeType == NodeType.ID)
                     {
-                        langManager.lastErrorToken = node.token;
-                        throw new Exception("Line " + node.token.line + ": " + "Invalid number format!");
+                        ((Hashtable)table[level])[((ID)_node.expr).name] = new LangNumber((int)res, this);
                     }
-                    sc = Convert.ToString(Convert.ToInt32(o));
+                    else if (_node.expr.nodeType == NodeType.BRACKETS)
+                    {
+                        BracketsInterpret(_node.expr, new LangNumber((int)res, this));
+                    }
+                    else if (_node.expr.nodeType == NodeType.DOT)
+                    {
+                        DotInterpret(_node.expr, new LangNumber((int)res, this));
+                    }
+                    return new LangNumber((int)res, this);
+                }
+                else
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Input cannot be converted into number!");
+                }
+            }
+            else if (_node.scanType.name == "number")
+            {
+
+                double res = 0;
+                if (Double.TryParse(sc, out res))
+                {
+                    if (_node.expr.nodeType == NodeType.ID)
+                    {
+                        ((Hashtable)table[level])[((ID)_node.expr).name] = new LangNumber((int)res, this);
+                    }
+                    else if (_node.expr.nodeType == NodeType.BRACKETS)
+                    {
+                        BracketsInterpret(_node.expr, new LangNumber((int)res, this));
+                    }
+                    else if (_node.expr.nodeType == NodeType.DOT)
+                    {
+                        DotInterpret(_node.expr, new LangNumber((int)res, this));
+                    }
+                    return new LangNumber((int)res, this);
+                }
+                else
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Input cannot be converted into number!");
                 }
             }
             else
             {
-                double o;
-                if (double.TryParse(sc, out o))
-                {
-                    type = ObjectType.NUMBER;
-                }
+                langManager.lastErrorToken = node.token;
+                throw new Exception("Line " + node.token.line + ": " + "Unknown scan type!");
             }
-            if (type == ObjectType.NUMBER)
-            {
-                ((Hashtable)table[level])[((ID)(_node.expr)).name] = new LangNumber(Convert.ToDouble(sc));
-            }
-            else
-            {
-                ((Hashtable)table[level])[((ID)(_node.expr)).name] = new LangString(sc);
-            }
-            foreach (ScanStatement stat in _node.extras)
-            {
-                Successful = Successful && (((LangNumber)scanStatInterpret(stat)).numberValue) != 0;
-            }
-            return new LangNumber(Convert.ToInt32(Successful));
         }
         LangObject importStatInterpret(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             ImportStatement _node = (ImportStatement)node;
             foreach (string file in _node.imports)
             {
@@ -1984,12 +2089,12 @@ namespace Lang.language
                         throw new Exception("The file " + file + " doesn't exists");
                     }
                 }
-                Lexer lexer = new Lexer(new LangManager(null, null), code);
+                Lexer lexer = new Lexer(new LangManager(null), code);
                 lexer.FileName = file;
-                Parser parser = new Parser(new LangManager(null, null));
+                Parser parser = new Parser(new LangManager(null));
                 parser.updateTokens(lexer.lex());
                 Node stats = parser.parse();
-                Interpreter inter = new Interpreter(console, new LangManager(console, null));
+                Interpreter inter = new Interpreter(new LangManager(null));
                 inter.updateRoot((StatementList)stats);
                 inter.interpret();
                 foreach (DictionaryEntry dic in ((Hashtable)inter.table[0]))
@@ -2005,12 +2110,12 @@ namespace Lang.language
                     classes[dic.Key] = dic.Value;
                 }
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
         LangObject newStatInterpret(Node node)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             ClassInitStatement stat = (ClassInitStatement)node;
             if (!classes.ContainsKey(stat.constructor.name))
             {
@@ -2018,7 +2123,7 @@ namespace Lang.language
                 throw new Exception("Line " + stat.constructor.token.line + ": There is no such class!");
             }
             ClassStatement _class = (ClassStatement)classes[stat.constructor.name];
-            LangClass _ret_class = new LangClass(_class, stat);
+            LangClass _ret_class = new LangClass(_class, stat, this);
             ArrayList paramsCalculated = new ArrayList();
             foreach (Node parm in stat.constructor.parameters)
             {
@@ -2100,7 +2205,7 @@ namespace Lang.language
         LangObject ifStatInterpret(Node node_)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             IfStatement node = (IfStatement)node_;
             bool foundInIfs = false;
             foreach (IfData data in node.data)
@@ -2126,13 +2231,13 @@ namespace Lang.language
                         return ret;
                 }
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
 
         LangObject forStatInterpret(Node node_)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             ForStatement node = (ForStatement)node_;
             for (statDecider(node.init_stat); ((LangNumber)decider(node.check_expr)).numberValue != 0; statDecider(node.inc_stat))
             {
@@ -2148,13 +2253,13 @@ namespace Lang.language
                         return _val;
                 }
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
 
         LangObject whileStatInterpret(Node node_)
         {
             if (!keepWorking)
-                return new LangState("stop");
+                return new LangState("stop", this);
             WhileStatement node = (WhileStatement)node_;
             while (((LangNumber)decider(node.check_expr)).numberValue != 0)
             {
@@ -2170,7 +2275,7 @@ namespace Lang.language
                         return _val;
                 }
             }
-            return new LangNumber(0);
+            return new LangNumber(0, this);
         }
 
         LangObject tryStatInterpret(Node node_)
@@ -2184,7 +2289,7 @@ namespace Lang.language
             {
                 if (node.catchID == null)
                 {
-                    return new LangNumber(0);
+                    return new LangNumber(0, this);
                 }
                 string risen = e.Message;
                 increaseLevel();
@@ -2192,7 +2297,7 @@ namespace Lang.language
                 {
                     ((Hashtable)table[level])[dic.Key] = dic.Key;
                 }
-                ((Hashtable)table[level])[node.catchID.name] = new LangString(risen);
+                ((Hashtable)table[level])[node.catchID.name] = new LangString(risen, this);
                 return statListDecider(node.catchStats);
             }
         }

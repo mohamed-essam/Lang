@@ -31,12 +31,12 @@ namespace Lang.language
         /// </summary>
         /// <param name="console">The LangConsole object that the code will read/write to it</param>
         /// <param name="fileName">The name of the file to be Lexed, Parsed, and Interpreted</param>
-        public LangManager(LangConsole console, string fileName)
+        public LangManager(string fileName)
         {
             lexer = new Lexer(this);
             lexer.FileName = fileName;
             parser = new Parser(this);
-            interpreter = new Interpreter(console, this);
+            interpreter = new Interpreter(this);
             interpreter.FileName = fileName;
         }
 

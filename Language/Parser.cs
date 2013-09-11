@@ -332,8 +332,11 @@ namespace Lang.language
             token = null;
             expr.Dispose();
             expr = null;
-            scanType.Dispose();
-            scanType = null;
+            if (scanType != null)
+            {
+                scanType.Dispose();
+                scanType = null;
+            }
             foreach (ScanStatement stat in extras)
             {
                 stat.Dispose();

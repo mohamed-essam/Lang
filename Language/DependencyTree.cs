@@ -17,8 +17,8 @@ namespace Lang.language
         
         public DependencyTree()
         {
-            lexer = new Lexer(new LangManager(null, null));
-            parser = new Parser(new LangManager(null, null));
+            lexer = new Lexer(new LangManager(null));
+            parser = new Parser(new LangManager(null));
             imported = new ArrayList();
             tree = new ArrayList();
         }
