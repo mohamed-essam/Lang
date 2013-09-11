@@ -43,7 +43,7 @@ namespace Lang
                 fileName = path.Substring(path.LastIndexOf('\\') + 1);
             }
             LangManager langManager = new LangManager(fileName);
-            langManager.interpreter.breakpoints = LineNumberer.BreakPoints;
+            langManager.interpreter.breakpoints = (ArrayList)LineNumberer.BreakPoints.Clone();
             try
             {
                 langManager.updateCode(curCode);
@@ -348,13 +348,12 @@ namespace Lang
                     // Nothing to do here
                 }
                 LineNumberer.ErrorLineNumber = number;
-                LineNumberer.Refresh();
             }
             else
             {
                 LineNumberer.ErrorLineNumber = -1;
-                LineNumberer.Refresh();
             }
+            LineNumberer.Refresh();
             langManager.INTERPRET = true;
         }
     }

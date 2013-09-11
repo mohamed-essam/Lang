@@ -30,6 +30,11 @@ namespace Lang.Language
             lines = new ArrayList();
             lastCallingThread = thread;
             handlingInterpreter = _handler;
+            codeRTB.Text = handlingInterpreter.langManager.lexer.GetCode();
+            CodeLineNumberer.BackgroundGradient_AlphaColor = SystemColors.Control;
+            CodeLineNumberer.BackgroundGradient_BetaColor = SystemColors.Control;
+            CodeLineNumberer.BreakPoints = _handler.breakpoints;
+            CodeLineNumberer.Refresh();
         }
 
         internal void getNextToken()
@@ -125,7 +130,7 @@ namespace Lang.Language
             }
             else if (obj.objectType == ObjectType.STRING)
             {
-                node.Text = ((LangString)obj).stringValue;
+                node.Text = "\"" + ((LangString)obj).stringValue + "\"";
             }
             else if (obj.objectType == ObjectType.MAP)
             {
@@ -160,7 +165,23 @@ namespace Lang.Language
             }
         }
 
-        internal void Debug(Hashtable vars)
+        private int IndexOfNth(string str, char c, int n)
+        {
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == c)
+                {
+                    n--;
+                    if (n < 0)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        internal void Debug(Hashtable vars, int Line)
         {
             lastCallingThread.Suspend();
             foreach (DictionaryEntry dic in vars)
@@ -172,12 +193,48 @@ namespace Lang.Language
                 DebugTV.Nodes.Add(root);
             }
             ResumeButton.Enabled = true;
+            consoleRTB.Visible = false;
+            codeRTB.Visible = true;
+            CodeLineNumberer.Visible = true;
+            int ind = 0, end = 0;
+            if (Line == 1)
+            {
+                end = codeRTB.Text.IndexOf('\n');
+                if (end == -1)
+                    end = codeRTB.Text.Length;
+            }
+            else
+            {
+                ind = IndexOfNth(codeRTB.Text, '\n', Line - 2) + 1;
+                end = IndexOfNth(codeRTB.Text, '\n', Line - 1);
+                if (end == -1)
+                {
+                    end = codeRTB.Text.Length;
+                }
+            }
+            codeRTB.Focus();
+            codeRTB.SelectionStart = ind;
+            codeRTB.SelectionLength = end - ind;
+        }
+
+        int getLineNumberAt(string code, int idx)
+        {
+            int line = 1;
+            for (int i = 0; i < idx; i++)
+            {
+                if (code[i] == '\n')
+                    line++;
+            }
+            return line;
         }
 
         private void ResumeButton_Click(object sender, EventArgs e)
         {
             lastCallingThread.Resume();
             DebugTV.Nodes.Clear();
+            consoleRTB.Visible = true;
+            codeRTB.Visible = false;
+            CodeLineNumberer.Visible = false;
         }
 
         internal void HandleExceptions(Exception e, Token ErrorToken, ArrayList StackTrace)
@@ -197,6 +254,40 @@ namespace Lang.Language
             if (lastCallingThread.ThreadState == ThreadState.Suspended)
             {
                 lastCallingThread.Resume();
+            }
+        }
+
+        private void codeRTB_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F9)
+            {
+                int lnNum = getLineNumberAt(codeRTB.Text, codeRTB.SelectionStart);
+                if (CodeLineNumberer.BreakPoints.Contains(lnNum))
+                {
+                    CodeLineNumberer.BreakPoints.Remove(lnNum);
+                }
+                else
+                {
+                    CodeLineNumberer.BreakPoints.Add(lnNum);
+                }
+                CodeLineNumberer.Refresh();
+                handlingInterpreter.breakpoints = CodeLineNumberer.BreakPoints;
+            }
+        }
+
+        private void SwitchButton_Click(object sender, EventArgs e)
+        {
+            if (consoleRTB.Visible)
+            {
+                consoleRTB.Visible = false;
+                codeRTB.Visible = true;
+                CodeLineNumberer.Visible = true;
+            }
+            else
+            {
+                consoleRTB.Visible = true;
+                codeRTB.Visible = false;
+                CodeLineNumberer.Visible = false;
             }
         }
     }

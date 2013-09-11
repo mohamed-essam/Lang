@@ -37,9 +37,8 @@ namespace Lang.language
         internal bool keepWorking = true;
         internal ArrayList breakpoints;
         internal bool isStopped = false;
-        internal int stoppedLine;
         internal string FileName;
-        LangManager langManager;
+        internal LangManager langManager;
         internal ArrayList StackTrace;
         private string lastFunctionCalled = "__MAIN__";
         CodeGUI gui;
@@ -295,7 +294,7 @@ namespace Lang.language
                 {
                     gui.Invoke((MethodInvoker)delegate()
                     {
-                        gui.Debug((Hashtable)table[level]);
+                        gui.Debug((Hashtable)table[level], stat.token.line);
                     });
                 }
                 LangObject ret = statDecider(stat);

@@ -37,6 +37,11 @@ namespace Lang.language
             langManager = _langManager;
         }
 
+        internal string GetCode()
+        {
+            return code;
+        }
+
         /// <summary>
         /// Initializes the reserved keywords, Called only once.
         /// </summary>
