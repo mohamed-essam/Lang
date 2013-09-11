@@ -701,6 +701,56 @@ namespace Lang.language
                 return new LangNumber(1, this);
             }
             #endregion
+            #region newImage
+            else if (stat.name == "newImage")
+            {
+                checkParameterNumber("newImage", 6, stat);
+                LangObject _W, _H, _R, _G, _B;
+                _W = decider((Node)stat.parameters[0]);
+                _H = decider((Node)stat.parameters[1]);
+                _R = decider((Node)stat.parameters[2]);
+                _G = decider((Node)stat.parameters[3]);
+                _B = decider((Node)stat.parameters[4]);
+                #region confirm Types
+                if (_W.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'number', '" + Convert.ToString(_W.objectType) + "' Found");
+                }
+                if (_H.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_H.objectType) + "' Found");
+                }
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                #endregion
+                LangNumber W = (LangNumber)_W,
+                           H = (LangNumber)_H,
+                           R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B;
+                LangImage created = new LangImage(new Bitmap((int)W.numberValue, (int)H.numberValue), this);
+                using (Graphics graphics = Graphics.FromImage(created.imageValue))
+                {
+                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue)), new Rectangle(0, 0, (int)W.numberValue, (int)H.numberValue));
+                }
+                return created;
+            }
+            #endregion
             #region setImagePixel
             else if (stat.name == "setImagePixel")
             {
@@ -887,9 +937,11 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B,
                            T = (LangNumber)_T;
-                var graphics = Graphics.FromImage(img.imageValue);
-                Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                graphics.DrawLine(pen, new Point((int)X1.numberValue, (int)Y1.numberValue), new Point((int)X2.numberValue, (int)Y2.numberValue));
+                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                {
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
+                    graphics.DrawLine(pen, new Point((int)X1.numberValue, (int)Y1.numberValue), new Point((int)X2.numberValue, (int)Y2.numberValue));
+                }
                 return new LangNumber(0, this);
             }
             #endregion
@@ -963,12 +1015,14 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B,
                            T = (LangNumber)_T;
-                var graphics = Graphics.FromImage(img.imageValue);
-                Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
-                Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
-                Rectangle rect = new Rectangle(start, size);
-                graphics.DrawRectangle(pen, rect);
+                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                {
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
+                    Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
+                    Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                    Rectangle rect = new Rectangle(start, size);
+                    graphics.DrawRectangle(pen, rect);
+                }
                 return new LangNumber(0, this);
             }
             #endregion
@@ -1063,13 +1117,15 @@ namespace Lang.language
                            R2 = (LangNumber)_R2,
                            G2 = (LangNumber)_G2,
                            B2 = (LangNumber)_B2;
-                var graphics = Graphics.FromImage(img.imageValue);
-                Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
-                Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
-                Rectangle rect = new Rectangle(start, size);
-                graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue, (int)G2.numberValue, (int)B2.numberValue)), rect);
-                graphics.DrawRectangle(pen, rect);
+                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                {
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
+                    Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
+                    Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                    Rectangle rect = new Rectangle(start, size);
+                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue, (int)G2.numberValue, (int)B2.numberValue)), rect);
+                    graphics.DrawRectangle(pen, rect);
+                }
                 return new LangNumber(0, this);
             }
             #endregion

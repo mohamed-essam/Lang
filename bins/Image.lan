@@ -23,6 +23,21 @@ class Image
         let this.OriginalPath = path;
     endfunction
     
+    function Image(W as integer, H as integer)
+        let this.Bitmap = newImage(W, H, 0, 0, 0);
+        let this.OriginalPath = "Untitled.png";
+    endfunction
+    
+    function Image(W as integer, H as integer, pixel as Pixel)
+        let this.Bitmap = newImage(W, H, pixel.R, pixel.G, pixel.B);
+        let this.OriginalPath = "Untitled.png";
+    endfunction
+    
+    function Image(W as integer, H as integer, R as integer, G as integer, B as integer)
+        let this.Bitmap = newImage(W, H, R, G, B);
+        let this.OriginalPath = "Untitled.png";
+    endfunction
+    
     function GetPixel(X as integer, Y as integer)
         this.__CheckCoords(X, Y);
         return new Pixel(getImagePixel(this.Bitmap, X, Y));
