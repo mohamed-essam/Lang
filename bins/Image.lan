@@ -48,6 +48,11 @@ class Image
         setImagePixel(this.Bitmap, X, Y, pixel.R, pixel, G, pixel, B);
     endfunction
     
+    function UpdatePixel(X as integer, Y as integer, R as integer, G as integer, B as integer)
+        this.__CheckCoords(X, Y);
+        setImagePixel(this.Bitmap, X, Y, R, G, B);
+    endfunction
+    
     function GetWidth()
         return getImageWidth(this.Bitmap);
     endfunction
@@ -124,7 +129,27 @@ class Image
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, T, R2 ,G2 ,B2);
     endfunction
     
-    function Save()
+    function drawCircle(X as integer, Y as integer, RAD as integer)
+        drawImageCircle(this.Bitmap, X, Y, RAD, 0, 0, 0, 1);
+    endfunction
+    
+    function drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
+        drawImageCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, 1);
+    endfunction
+    
+    function drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
+        drawImageCircle(this.Bitmap, X, Y, RAD, R, G, B, 1);
+    endfunction
+    
+    function drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
+        drawImageCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T);
+    endfunction
+    
+    function drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
+        drawImageCircle(this.Bitmap, X, Y, RAD, R, G, B, T);
+    endfunction
+    
+     function Save()
         saveImage(this.Bitmap, this.OriginalPath);
     endfunction
     
