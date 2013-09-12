@@ -149,6 +149,34 @@ class Image
         drawImageCircle(this.Bitmap, X, Y, RAD, R, G, B, T);
     endfunction
     
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, 0, 0, 0, 1, 0, 0, 0);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, 1, pixel.R, pixel.G, pixel.B);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, 1, R, G, B);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T, pixel.R, pixel.G, pixel.B);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, T, R, G, B);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer, pixel2 as Pixel)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T, pixel2.R, pixel2.G, pixel2.B);
+    endfunction
+    
+    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
+        drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, T, R2, G2, B2);
+    endfunction
+    
      function Save()
         saveImage(this.Bitmap, this.OriginalPath);
     endfunction
