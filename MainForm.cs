@@ -54,6 +54,7 @@ namespace Lang
                 return;
             }
             Thread runnerThread = new Thread(new ThreadStart(langManager.run), 33554432);
+            Thread.Sleep(500);
             runnerThread.Start();
             LiveErrors.Enabled = false;
         }

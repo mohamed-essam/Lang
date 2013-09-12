@@ -256,6 +256,11 @@ namespace Lang.Language
             string exception = "In file: " + ErrorToken.file + e.Message;
             consoleRTB.Text += "\n" + exception + trace;
             handlingInterpreter.keepWorking = false;
+            if (lastCallingThread.ThreadState == ThreadState.Suspended)
+            {
+                lastRequestedString = "";
+                lastCallingThread.Resume();
+            }
         }
 
         private void CodeGUI_FormClosing(object sender, FormClosingEventArgs e)
@@ -265,10 +270,17 @@ namespace Lang.Language
             {
                 lastCallingThread.Resume();
             }
-            handlingInterpreter.gui.Invoke((MethodInvoker)delegate()
+            try
             {
-                handlingInterpreter.gui.Close();
-            });
+                handlingInterpreter.gui.Invoke((MethodInvoker)delegate()
+                {
+                    handlingInterpreter.gui.Close();
+                });
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         private void codeRTB_KeyDown(object sender, KeyEventArgs e)

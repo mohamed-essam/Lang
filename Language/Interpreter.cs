@@ -243,7 +243,18 @@ namespace Lang.language
         private void runConsole(object thread)
         {
             consoleUI = new CodeConsoleUI((Thread)thread, this);
-            Application.Run((CodeConsoleUI)consoleUI);
+            while (true)
+            {
+                try
+                {
+                    Application.Run(consoleUI);
+                    break;
+                }
+                catch (Exception)
+                {
+
+                }
+            }
         }
 
         private void runGUI(object thread)
@@ -1341,6 +1352,86 @@ namespace Lang.language
                     Rectangle rect = new Rectangle(new Point((int)(X.numberValue - RAD.numberValue), (int)(Y.numberValue - RAD.numberValue)), new Size((int)RAD.numberValue * 2, (int)RAD.numberValue * 2));
                     graphics.FillEllipse(brush, rect);
                     graphics.DrawEllipse(pen, rect);
+                }
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #region drawImageText
+            else if (stat.name == "drawImageText")
+            {
+                checkParameterNumber("drawImageText", 9, stat);
+                LangObject _img, _text, _X, _Y, _R, _G, _B, _Size, _Font;
+                _img = decider((Node)stat.parameters[0]);
+                _text = decider((Node)stat.parameters[1]);
+                _X = decider((Node)stat.parameters[2]);
+                _Y = decider((Node)stat.parameters[3]);
+                _R = decider((Node)stat.parameters[4]);
+                _G = decider((Node)stat.parameters[5]);
+                _B = decider((Node)stat.parameters[6]);
+                _Size = decider((Node)stat.parameters[7]);
+                _Font = decider((Node)stat.parameters[8]);
+                #region TypeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_text.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                }
+                if (_X.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                }
+                if (_Y.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                }
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                if (_Size.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                }
+                if (_Font.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                }
+
+                #endregion
+                LangImage img = (LangImage)_img;
+                LangString text = (LangString)_text,
+                           Font = (LangString)_Font;
+                LangNumber X = (LangNumber)_X,
+                           Y = (LangNumber)_Y,
+                           Size = (LangNumber)_Size,
+                           R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B;
+                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                {
+                    Font font = new Font(Font.stringValue, (float)Size.numberValue);
+                    Brush brush = new SolidBrush(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
+                    graphics.DrawString(text.stringValue, font, brush, new PointF((float)X.numberValue, (float)Y.numberValue));
                 }
                 return new LangNumber(0, this);
             }

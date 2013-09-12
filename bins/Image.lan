@@ -177,6 +177,34 @@ class Image
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, T, R2, G2, B2);
     endfunction
     
+    function drawText(text as string, X as integer, Y as integer)
+        drawImageText(this.Bitmap, text, X, Y, 0, 0, 0, 12, "Arial");
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, pixel as Pixel)
+        drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, 12, "Arial");
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer)
+        drawImageText(this.Bitmap, text, X, Y, R, G, B, 12, "Arial");
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer)
+        drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, Size, "Arial");
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer)
+        drawImageText(this.Bitmap, text, X, Y, R, G, B, Size, "Arial");
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer, Font as string)
+        drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, Size, Font);
+    endfunction
+    
+    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer, Font as string)
+        drawImageText(this.Bitmap, text, X, Y, R, G, B, Size, Font);
+    endfunction
+    
      function Save()
         saveImage(this.Bitmap, this.OriginalPath);
     endfunction

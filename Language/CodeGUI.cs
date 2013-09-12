@@ -39,7 +39,10 @@ namespace Lang.Language
             }
             catch (Exception ex)
             {
-                handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+                handler.consoleUI.Invoke((MethodInvoker)delegate()
+                {
+                    handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+                });
             }
         }
 
@@ -53,7 +56,11 @@ namespace Lang.Language
             }
             catch (Exception ex)
             {
-                handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+
+                handler.consoleUI.Invoke((MethodInvoker)delegate()
+                {
+                    handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+                });
             }
         }
 
@@ -68,7 +75,10 @@ namespace Lang.Language
             }
             catch (Exception ex)
             {
-                handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+                handler.consoleUI.Invoke((MethodInvoker)delegate()
+                {
+                    handler.consoleUI.HandleExceptions(ex, handler.langManager.lastErrorToken, handler.StackTrace);
+                });
             }
         }
     }
