@@ -253,7 +253,7 @@ namespace Lang.Language
             {
                 trace = "\nIn file " + entry.FileName + ": Line " + entry.LineNumber + ": Function '" + entry.FunctionName + "'" + trace;
             }
-            string exception = "In file: " + ErrorToken.file + e.Message;
+            string exception = "In file: " + ErrorToken.file + " In line: " + ErrorToken.line + " : " + e.Message;
             consoleRTB.Text += "\n" + exception + trace;
             handlingInterpreter.keepWorking = false;
             if (lastCallingThread.ThreadState == ThreadState.Suspended)

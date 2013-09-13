@@ -22,7 +22,7 @@ namespace Lang
         string curCode;
         #endregion
 
-        public MainForm()
+        public MainForm(string[] args)
         {
             InitializeComponent();
             LineNumberer.BackgroundGradient_AlphaColor = SystemColors.Control;
@@ -31,7 +31,38 @@ namespace Lang
             LineNumberer.GridLines_Color = SystemColors.Control;
             LineNumberer.MarginLines_Color = SystemColors.Control;
             LineNumberer.LineNrs_LeadingZeroes = false;
-            Text = Text + " | Untitled.lan";
+            if (args.Length > 0)
+            {
+                bool r = false;
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i].StartsWith("-"))
+                    {
+                        switch (args[i])
+                        {
+                            case "-r":
+                                r = true;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        path = args[i];
+                        Text += " | " + path.Substring(path.LastIndexOf('\\') + 1);
+                        codeRTB.Text = File.ReadAllText(path);
+                    }
+                }
+                if (r)
+                {
+                    Run();
+                    Hide();
+                    Thread.CurrentThread.Abort();
+                }
+            }
+            else
+            {
+                Text = Text + " | Untitled.lan";
+            }
         }
 
         private void Run()

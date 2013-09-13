@@ -1588,7 +1588,14 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'class', '" + Convert.ToString(_handler.objectType) + "' Found");
                 }
-                EventHandlers[((LangString)_event).stringValue] = _handler;
+                LangString event_ = (LangString)_event;
+                LangClass handler = (LangClass)_handler;
+                if (!handler.methods.ContainsKey(event_.stringValue))
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Class '" + handler.name + "' can't handler the event '" + event_.stringValue + "'!");
+                }
+                EventHandlers[event_.stringValue] = _handler;
                 return new LangNumber(0, this);
             }
             #endregion
@@ -1791,10 +1798,6 @@ namespace Lang.language
                 return;
             }
             LangClass handler = (LangClass)EventHandlers[EventName];
-            if (!handler.methods.ContainsKey(EventName))
-            {
-                throw new Exception("Class type '" + handler.name + "' assigned for handling '" + EventName + "' event doesn't contain the handler method!");
-            }
             ArrayList newParameters = new ArrayList();
             foreach (Object obj in parameters)
             {
