@@ -52,7 +52,7 @@ namespace Lang.language
                 tree = new DependencyTree();
                 try
                 {
-                    bool isBad = tree.DetectCirularDependency("", code);
+                    bool isBad = tree.DetectCirularDependency(lexer.FileName, code);
                     if (isBad)
                     {
                         throw new Exception("Circular reasoning doesn't work, trust me.");

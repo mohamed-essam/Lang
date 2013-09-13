@@ -2364,13 +2364,19 @@ namespace Lang.language
                 }
             }
             #endregion
+            if (_function == null)
+            {
+                langManager.lastErrorToken = _call.token;
+                throw new Exception("Method " + _call.name + " not here");
+            }
             level++;
             if (level >= table.Count)
                 table.Add(new Hashtable());
-            foreach (string global in _function.globals)
-            {
-                ((Hashtable)table[level])[global] = ((Hashtable)table[level - 1])[global];
-            }
+            if(_function.globals != null)
+                foreach (string global in _function.globals)
+                {
+                    ((Hashtable)table[level])[global] = ((Hashtable)table[level - 1])[global];
+                }
             for (int i = 0; i < _call.parameters.Count; i++)
             {
                 LangObject ret = (LangObject)alreadyCalcd[i];
@@ -2627,28 +2633,30 @@ namespace Lang.language
             foreach (string file in _node.imports)
             {
                 string code = "";
+                string path = "";
                 try
                 {
-                    code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + file + ".lan");
+                    code = File.ReadAllText(path = (FileName.Substring(0, FileName.LastIndexOf('\\') + 1) + file + ".lan"));
                 }
                 catch (IOException)
                 {
                     try
                     {
-                        code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\Include\\" + file + ".lan");
+                        code = File.ReadAllText(path = (Directory.GetCurrentDirectory() + "\\Include\\" + file + ".lan"));
                     }
                     catch (IOException)
                     {
                         throw new Exception("The file " + file + " doesn't exists");
                     }
                 }
-                Lexer lexer = new Lexer(new LangManager(null), code);
-                lexer.FileName = file;
-                Parser parser = new Parser(new LangManager(null));
+                Lexer lexer = new Lexer(new LangManager(path), code);
+                lexer.FileName = path;
+                Parser parser = new Parser(new LangManager(path));
                 parser.updateTokens(lexer.lex());
                 Node stats = parser.parse();
-                Interpreter inter = new Interpreter(new LangManager(null));
+                Interpreter inter = new Interpreter(new LangManager(path));
                 inter.updateRoot((StatementList)stats);
+                inter.FileName = path;
                 inter.interpret();
                 foreach (DictionaryEntry dic in ((Hashtable)inter.table[0]))
                 {

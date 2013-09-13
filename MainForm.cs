@@ -37,10 +37,10 @@ namespace Lang
         private void Run()
         {
             curCode = codeRTB.Text;
-            string fileName = "Untitled.lan";
+            string fileName = Directory.GetCurrentDirectory() + "\\";
             if (path != null)
             {
-                fileName = path.Substring(path.LastIndexOf('\\') + 1);
+                fileName = path;
             }
             LangManager langManager = new LangManager(fileName);
             langManager.interpreter.breakpoints = (ArrayList)LineNumberer.BreakPoints.Clone();

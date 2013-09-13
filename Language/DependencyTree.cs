@@ -14,6 +14,7 @@ namespace Lang.language
         private Parser parser;
         private ArrayList imported;
         private ArrayList tree;
+        private string filePath;
         
         public DependencyTree()
         {
@@ -96,7 +97,7 @@ namespace Lang.language
                 {
                     try
                     {
-                        code = File.ReadAllText(Directory.GetCurrentDirectory() + "\\" + fileName + ".lan");
+                        code = File.ReadAllText(filePath + fileName + ".lan");
                     }
                     catch (IOException)
                     {
@@ -174,6 +175,7 @@ namespace Lang.language
         {
             ArrayList imports = readFile("", code);
             imported.Add(fileName);
+            filePath = fileName.Substring(0, fileName.LastIndexOf('\\') + 1);
             foreach (string str in imports)
             {
                 tree.Add(new KeyValuePair<string, string>(fileName, str));
