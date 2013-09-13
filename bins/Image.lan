@@ -205,6 +205,45 @@ class Image
         drawImageText(this.Bitmap, text, X, Y, R, G, B, Size, Font);
     endfunction
     
+    function drawImage(image as Image)
+        drawImageImage(this.Bitmap, image.Bitmap, 0, 0);
+    endfunction
+    
+    function drawImage(image as Image, X as integer, Y as integer)
+        drawImageImage(this.Bitmap, image.Bitmap, X, Y);
+    endfunction
+    
+    function getTextWidth(text as string)
+        return getTextWidth(text, "Arial", 12);
+    endfunction
+    
+    function getTextWidth(text as string, Font as string)
+        return getTextWidth(text, Font, 12);
+    endfunction
+    
+    function getTextWidth(text as string, Size as integer)
+        return getTextWidth(text, "Arial", Size);
+    endfunction
+    
+    function getTextWidth(text as string, Font as string, Size as integer)
+        return getTextWidth(text, Font, Size);
+    endfunction
+        function getTextHeight(text as string)
+        return getTextHeight(text, "Arial", 12);
+    endfunction
+    
+    function getTextHeight(text as string, Font as string)
+        return getTextHeight(text, Font, 12);
+    endfunction
+    
+    function getTextHeight(text as string, Size as integer)
+        return getTextHeight(text, "Arial", Size);
+    endfunction
+    
+    function getTextHeight(text as string, Font as string, Size as integer)
+        return getTextHeight(text, Font, Size);
+    endfunction
+    
      function Save()
         saveImage(this.Bitmap, this.OriginalPath);
     endfunction

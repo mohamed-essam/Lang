@@ -29,7 +29,7 @@ namespace Lang.language
 
     public class Interpreter
     {
-        StatementList root;
+        private StatementList root;
         internal ArrayList table;
         internal int level;
         internal Hashtable functions;
@@ -1434,6 +1434,118 @@ namespace Lang.language
                     graphics.DrawString(text.stringValue, font, brush, new PointF((float)X.numberValue, (float)Y.numberValue));
                 }
                 return new LangNumber(0, this);
+            }
+            #endregion
+            #region drawImageImage
+            else if (stat.name == "drawImageImage")
+            {
+                checkParameterNumber("drawImageImage", 4, stat);
+                LangObject _img, _img2, _X, _Y;
+                _img = decider((Node)stat.parameters[0]);
+                _img2 = decider((Node)stat.parameters[1]);
+                _X = decider((Node)stat.parameters[2]);
+                _Y = decider((Node)stat.parameters[3]);
+                #region typeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_img2.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'image', '" + Convert.ToString(_img2.objectType) + "' Found");
+                }
+                if (_X.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                }
+                if (_Y.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                }
+                #endregion
+                LangImage img = (LangImage)_img,
+                          img2 = (LangImage)_img2;
+                LangNumber X = (LangNumber)_X,
+                           Y = (LangNumber)_Y;
+                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                {
+                    graphics.DrawImage(img2.imageValue, new Point((int)X.numberValue, (int)Y.numberValue));
+                }
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #region getTextWidth
+            else if (stat.name == "getTextWidth")
+            {
+                checkParameterNumber("getTextWidth", 3, stat);
+                LangObject _text, _Font, _Size;
+                _text = decider((Node)stat.parameters[0]);
+                _Font = decider((Node)stat.parameters[1]);
+                _Size = decider((Node)stat.parameters[2]);
+                #region typeConfirming
+                if (_text.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                }
+                if (_Font.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                }
+                if (_Size.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                }
+                #endregion
+                LangString text = (LangString)_text,
+                           Font = (LangString)_Font;
+                LangNumber Size = (LangNumber)_Size;
+                Bitmap fake = new Bitmap(1, 1);
+                using (Graphics graphics = Graphics.FromImage(fake))
+                {
+                    return new LangNumber(graphics.MeasureString(text.stringValue, new Font(Font.stringValue, (int)Size.numberValue)).Width, this);
+                }
+            }
+            #endregion
+            #region getTextHeight
+            else if (stat.name == "getTextHeight")
+            {
+                checkParameterNumber("getTextHeight", 3, stat);
+                LangObject _text, _Font, _Size;
+                _text = decider((Node)stat.parameters[0]);
+                _Font = decider((Node)stat.parameters[1]);
+                _Size = decider((Node)stat.parameters[2]);
+                #region typeConfirming
+                if (_text.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                }
+                if (_Font.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                }
+                if (_Size.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                }
+                #endregion
+                LangString text = (LangString)_text,
+                           Font = (LangString)_Font;
+                LangNumber Size = (LangNumber)_Size;
+                Bitmap fake = new Bitmap(1, 1);
+                using (Graphics graphics = Graphics.FromImage(fake))
+                {
+                    return new LangNumber(graphics.MeasureString(text.stringValue, new Font(Font.stringValue, (int)Size.numberValue)).Height, this);
+                }
             }
             #endregion
             #endregion
