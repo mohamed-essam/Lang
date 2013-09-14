@@ -244,6 +244,10 @@ class Image
         return getTextHeight(text, Font, Size);
     endfunction
     
+    function cropImage(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+        cropImage(this.Bitmap, X1, Y1, X2, Y2);
+    endfunction
+    
      function Save()
         saveImage(this.Bitmap, this.OriginalPath);
     endfunction

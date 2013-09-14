@@ -1548,6 +1548,59 @@ namespace Lang.language
                 }
             }
             #endregion
+            #region cropImage
+            else if (stat.name == "cropImage")
+            {
+                checkParameterNumber("cropImage", 5, stat);
+                LangObject _img, _X1, _Y1, _X2, _Y2;
+                _img = decider((Node)stat.parameters[0]);
+                _X1 = decider((Node)stat.parameters[1]);
+                _Y1 = decider((Node)stat.parameters[2]);
+                _X2 = decider((Node)stat.parameters[3]);
+                _Y2 = decider((Node)stat.parameters[4]);
+                #region typeConfirming
+                if (_img.objectType != ObjectType.IMAGE)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                }
+                if (_X1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                }
+                if (_Y1.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                }
+                if (_X2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                }
+                if (_Y2.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                }
+
+                #endregion
+                LangImage img = (LangImage)_img;
+                LangNumber X1 = (LangNumber)_X1,
+                           Y1 = (LangNumber)_Y1,
+                           X2 = (LangNumber)_X2,
+                           Y2 = (LangNumber)_Y2;
+                Rectangle cropRect = new Rectangle(new Point((int)X1.numberValue, (int)Y1.numberValue), new Size((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                Bitmap newB = new Bitmap(cropRect.Width, cropRect.Height);
+                using (Graphics graphics = Graphics.FromImage(newB))
+                {
+                    graphics.DrawImage(img.imageValue, cropRect, cropRect, GraphicsUnit.Pixel);
+                    img.imageValue = newB;
+                }
+                return new LangNumber(0, this);
+            }
+            #endregion
             #endregion
             #region Canvas Operations
             #region drawOnCanvas

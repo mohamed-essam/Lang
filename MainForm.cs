@@ -10,6 +10,7 @@ using System.Collections;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Lang
 {
@@ -318,27 +319,12 @@ namespace Lang
             {
                 int selpos = codeRTB.SelectionStart;
                 int lastbn = 0;
-                for (int i = 0; i < selpos; i++)
-                {
-                    if (codeRTB.Text[i] == '\n')
-                        lastbn = i;
-                }
-                string spaces = "";
-                if (lastbn + 1 < codeRTB.Text.Length)
-                {
-                    while (codeRTB.Text[++lastbn] == ' ')
-                    {
-                        spaces += ' ';
-                        if (lastbn + 1 >= codeRTB.Text.Length)
-                        {
-                            spaces += ' ';
-                            break;
-                        }
-                    }
-                }
-
+                string text = codeRTB.Text.Substring(0, selpos);
+                lastbn = text.LastIndexOf('\n');
+                text = text.Substring(lastbn+1);
+                Match match = Regex.Match(text, "[ ]*");
+                string spaces = match.Value;
                 codeRTB.SelectedText = "\n" + spaces;
-                //codeRTB.SelectionStart = selpos + spaces.Length + 1;
                 e.SuppressKeyPress = true;
             }
             if (e.KeyCode == Keys.F9)
