@@ -82,7 +82,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue * ((LangNumber)(other)).numberValue, handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' * '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' * '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -93,7 +93,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue / ((LangNumber)(other)).numberValue, handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' / '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' / '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -106,7 +106,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue + ((LangNumber)(other)).numberValue, handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' + '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' + '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -117,7 +117,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangNumber(numberValue - ((LangNumber)(other)).numberValue, handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' - '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' - '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -128,7 +128,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangNumber(Math.Pow(numberValue, ((LangNumber)(other)).numberValue), handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' ^ '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' ^ '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -138,7 +138,7 @@ namespace Lang.language
             {
                 return new LangNumber(numberValue % ((LangNumber)other).numberValue, handler);
             }
-            throw new InvalidOperationException("Invalid operation 'number' % '" + Convert.ToString(other.objectType).ToLower() + "'");
+            throw new InterpreterException("Invalid operation 'number' % '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
 
         public override bool Smaller(LangObject other)
@@ -148,7 +148,7 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return numberValue < ((LangNumber)(other)).numberValue;
                 default:
-                    throw new InvalidOperationException("Invalid operation 'number' < '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation 'number' < '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
@@ -177,23 +177,23 @@ namespace Lang.language
                 case ObjectType.NUMBER:
                     return new LangString(stringValue + Convert.ToString(((LangNumber)other).numberValue), handler);
                 default:
-                    throw new InvalidOperationException("Invalid operation '" + Convert.ToString(this.objectType) + "' + '" + Convert.ToString(other.objectType) + "'");
+                    throw new InterpreterException("Invalid operation '" + Convert.ToString(this.objectType) + "' + '" + Convert.ToString(other.objectType) + "'");
             }
         }
 
         public override LangObject Divide(LangObject other)
         {
-            throw new InvalidOperationException("Invalid operation 'string' / '" + Convert.ToString(other.objectType).ToLower() + "'");
+            throw new InterpreterException("Invalid operation 'string' / '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
 
         public override LangObject Minus(LangObject other)
         {
-            throw new InvalidOperationException("Invalid operation 'string' - '" + Convert.ToString(other.objectType).ToLower() + "'");
+            throw new InterpreterException("Invalid operation 'string' - '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
 
         public override LangObject Pow(LangObject other)
         {
-            throw new InvalidOperationException("Invalid operation 'string' ^ '" + Convert.ToString(other.objectType).ToLower() + "'");
+            throw new InterpreterException("Invalid operation 'string' ^ '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
 
         public override LangObject Multiply(LangObject other)
@@ -210,13 +210,13 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("Invalid operation 'string' * '" + Convert.ToString(other.objectType).ToLower() + "'");
+                throw new InterpreterException("Invalid operation 'string' * '" + Convert.ToString(other.objectType).ToLower() + "'");
             }
         }
 
         public override LangObject Mod(LangObject other)
         {
-            throw new InvalidOperationException("Invalid operation 'string' % '" + Convert.ToString(other.objectType).ToLower() + "'");
+            throw new InterpreterException("Invalid operation 'string' % '" + Convert.ToString(other.objectType).ToLower() + "'");
         }
 
         public override bool Smaller(LangObject other)
@@ -237,7 +237,7 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("Invalid logical operation on types 'string' and '" + Convert.ToString(other.objectType).ToLower() + "'");
+                throw new InterpreterException("Invalid logical operation on types 'string' and '" + Convert.ToString(other.objectType).ToLower() + "'");
             }
         }
 
@@ -259,22 +259,22 @@ namespace Lang.language
 
         public override LangObject Divide(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Minus(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Mod(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Multiply(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Plus(LangObject other)
@@ -288,17 +288,17 @@ namespace Lang.language
                 }
                 return ret;
             }
-            throw new InvalidOperationException();
+            throw new InterpreterException();
         }
 
         public override LangObject Pow(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override bool Smaller(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Clone()
@@ -332,39 +332,39 @@ namespace Lang.language
 
         public override LangObject Divide(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Minus(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Mod(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Multiply(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
         public override LangObject Plus(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
         public override LangObject Pow(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
         public override bool Smaller(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Clone()
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
     }
 
@@ -435,12 +435,12 @@ namespace Lang.language
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' + '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' + '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' + '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' + '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -449,19 +449,19 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' + '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' + '" + right.name + "'");
             }
         }
         public override LangObject Minus(LangObject other)
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' - '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' - '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' - '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' - '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -470,19 +470,19 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' - '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' - '" + right.name + "'");
             }
         }
         public override LangObject Divide(LangObject other)
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' / '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' / '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' / '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' / '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -491,19 +491,19 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' / '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' / '" + right.name + "'");
             }
         }
         public override LangObject Multiply(LangObject other)
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' * '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' * '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' * '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' * '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -512,19 +512,19 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' * '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' * '" + right.name + "'");
             }
         }
         public override LangObject Pow(LangObject other)
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' ^ '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' ^ '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' ^ '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' ^ '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -533,19 +533,19 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' ^ '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' ^ '" + right.name + "'");
             }
         }
         public override LangObject Mod(LangObject other)
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' % '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' % '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' % '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' % '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_plus"))
             {
@@ -554,7 +554,7 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' % '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' % '" + right.name + "'");
             }
         }
 
@@ -562,12 +562,12 @@ namespace Lang.language
         {
             if (other.objectType != ObjectType.CLASS)
             {
-                throw new InvalidOperationException("Invalid operation 'class' < '" + Convert.ToString(other.objectType) + "'");
+                throw new InterpreterException("Invalid operation 'class' < '" + Convert.ToString(other.objectType) + "'");
             }
             LangClass right = (LangClass)other;
             if (right.name != this.name)
             {
-                throw new InvalidOperationException("Invalid Operation '" + this.name + "' < '" + right.name + "'");
+                throw new InterpreterException("Invalid Operation '" + this.name + "' < '" + right.name + "'");
             }
             if (this.methods.ContainsKey("__operator_smaller"))
             {
@@ -584,7 +584,7 @@ namespace Lang.language
             }
             else
             {
-                throw new InvalidOperationException("No overloaded function for '" + this.name + "' < '" + right.name + "'");
+                throw new InterpreterException("No overloaded function for '" + this.name + "' < '" + right.name + "'");
             }
         }
     }
@@ -616,37 +616,37 @@ namespace Lang.language
 
         public override LangObject Divide(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Minus(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Multiply(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override bool Smaller(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Pow(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Mod(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
 
         public override LangObject Plus(LangObject other)
         {
-            throw new NotImplementedException();
+            throw new InterpreterException();
         }
     }
 }

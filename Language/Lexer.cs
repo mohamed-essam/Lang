@@ -7,6 +7,26 @@ using System.Collections;
 
 namespace Lang.language
 {
+    internal class LexerException : LangException
+    {
+
+        public LexerException()
+            : base()
+        {
+
+        }
+        public LexerException(string Message)
+            : base(Message)
+        {
+
+        }
+        public LexerException(string Message, Exception innerException)
+            : base(Message, innerException)
+        {
+
+        }
+    }
+
     public class Lexer
     {
         string code; // The code that would be lexed, Can be updated through updateCode(string)
@@ -201,8 +221,10 @@ namespace Lang.language
             if (reservedSpecialCharacters.ContainsKey(tok))
             {
                 acceptToken(tok, (TokenType)reservedSpecialCharacters[tok], idx);
+                return 0;
             }
-            return 0;
+            langManager.lastErrorToken = new Token(tok_ + "", TokenType.AND, line, FileName, idx, idx + 1);
+            throw new LexerException("Unknown character");
         }
 
         /// <summary>
@@ -266,7 +288,7 @@ namespace Lang.language
                             {
                                 langManager.lastLiveErrorToken = new Token(past, TokenType.NUMBER, line, FileName, idx - past.Length, idx - 1);
                             }
-                            throw new Exception("Line "+line+": "+"Syntax Error: Invalid number format");
+                            throw new LexerException("Line "+line+": "+"Syntax Error: Invalid number format");
                         }
                         else
                         {
@@ -340,7 +362,7 @@ namespace Lang.language
                                 {
                                     langManager.lastLiveErrorToken = new Token(("" + code[idx]) + ("" + code[idx + 1]), TokenType.STRING, line, FileName, idx, idx + 2);
                                 }
-                                throw new Exception("Invalid Escape Sequence");
+                                throw new LexerException("Invalid Escape Sequence");
                             }
                             past = past + toEscaped[code[idx+1]];
                             idx++;

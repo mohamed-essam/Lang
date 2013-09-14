@@ -12,6 +12,25 @@ using System.Windows.Forms;
 
 namespace Lang.language
 {
+    internal class InterpreterException : LangException
+    {
+
+        public InterpreterException()
+            : base()
+        {
+
+        }
+        public InterpreterException(string Message)
+            : base(Message)
+        {
+
+        }
+        public InterpreterException(string Message, Exception innerException)
+            : base(Message, innerException)
+        {
+
+        }
+    }
     internal class StackTraceEntry
     {
         internal string FileName;
@@ -212,7 +231,7 @@ namespace Lang.language
             {
                 val = statListDecider(root);
             }
-            catch (Exception e)
+            catch (LangException e)
             {
                 if (consoleUI == null)
                 {
@@ -228,14 +247,22 @@ namespace Lang.language
             }
             if (consoleUI != null)
             {
-                consoleUI.Invoke((MethodInvoker)delegate()
+                try
                 {
-                    consoleUI.Close();
-                });
-                gui.Invoke((MethodInvoker)delegate()
+                    consoleUI.Invoke((MethodInvoker)delegate()
+                    {
+                        consoleUI.Close();
+                    });
+                }
+                catch (InvalidOperationException) { }
+                try
                 {
-                    gui.Close();
-                });
+                    gui.Invoke((MethodInvoker)delegate()
+                    {
+                        gui.Close();
+                    });
+                }
+                catch (InvalidOperationException) { }
             }
             return val;
         }
@@ -320,7 +347,7 @@ namespace Lang.language
             if (callstat.parameters.Count != expected)
             {
                 langManager.lastErrorToken = ((Node)callstat.parameters[0]).token;
-                throw new ArgumentException("Line " + ((Node)callstat.parameters[0]).token.line + ": " + "Function '" + functionName + "' expectes " + expected + " parameters, " + callstat.parameters.Count + " given");
+                throw new InterpreterException("Line " + ((Node)callstat.parameters[0]).token.line + ": " + "Function '" + functionName + "' expectes " + expected + " parameters, " + callstat.parameters.Count + " given");
             }
         }
 
@@ -425,7 +452,7 @@ namespace Lang.language
             if (level > 5000)
             {
                 langManager.lastLiveErrorToken = node.token;
-                throw new Exception("Maximum recursion limit exceeded");
+                throw new InterpreterException("Maximum recursion limit exceeded");
             }
             #region built in
             #region Simple
@@ -450,11 +477,11 @@ namespace Lang.language
                 else
                 {
                     langManager.lastErrorToken = node_.token;
-                    throw new Exception("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map', '" + node_.nodeType + "' Given");
+                    throw new InterpreterException("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map', '" + node_.nodeType + "' Given");
                 }
                 if (ret == null || ret.objectType != ObjectType.MAP)
                 {
-                    throw new Exception("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map'");
+                    throw new InterpreterException("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map'");
                 }
                 return new LangNumber(((LangMap)ret).arrayValue.Count, this);
             }
@@ -477,12 +504,12 @@ namespace Lang.language
                         return new LangNumber((int)val_, this);
                     }
                     langManager.lastErrorToken = ((Node)stat.parameters[0]).token;
-                    throw new InvalidCastException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Invalid number format");
+                    throw new InterpreterException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Invalid number format");
                 }
                 if (expr.objectType == ObjectType.MAP)
                 {
                     langManager.lastErrorToken = ((Node)stat.parameters[0]).token;
-                    throw new InvalidCastException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Cannot convert from type 'map' to type 'number'");
+                    throw new InterpreterException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Cannot convert from type 'map' to type 'number'");
                 }
                 throw new NotImplementedException();
             }
@@ -502,7 +529,7 @@ namespace Lang.language
                         throw new NotImplementedException();
                     case ObjectType.MAP:
                         langManager.lastErrorToken = ((Node)stat.parameters[0]).token;
-                        throw new InvalidCastException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Cannot convert from type 'map' to type 'string'");
+                        throw new InterpreterException("Line " + ((Node)stat.parameters[0]).token.line + ": " + "Cannot convert from type 'map' to type 'string'");
                     default:
                         throw new NotImplementedException();
                 }
@@ -522,7 +549,7 @@ namespace Lang.language
                 LangObject obj = decider(((Node)stat.parameters[0]));
                 if (obj.objectType != ObjectType.STRING)
                 {
-                    throw new Exception("Line " + stat.token.line + ": " + "Function 'strlen' expects parameter 1 to be 'string', " + Convert.ToString(obj.objectType) + " Found");
+                    throw new InterpreterException("Line " + stat.token.line + ": " + "Function 'strlen' expects parameter 1 to be 'string', " + Convert.ToString(obj.objectType) + " Found");
                 }
                 return new LangNumber(((LangString)obj).stringValue.Length, this);
             }
@@ -536,7 +563,7 @@ namespace Lang.language
                 if (param.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param.objectType) + "' Found");
                 }
                 WebClient client = new WebClient();
                 string ret = client.DownloadString(((LangString)param).stringValue);
@@ -553,12 +580,12 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 if (param2.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
                 string regexp = ((LangString)param1).stringValue;
                 string searchIn = ((LangString)param2).stringValue;
@@ -580,7 +607,7 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
@@ -600,12 +627,12 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 if (param2.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
@@ -625,7 +652,7 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 string filePath = ((LangString)param1).stringValue;
                 if (File.Exists(filePath))
@@ -648,10 +675,10 @@ namespace Lang.language
                     }
                     else
                     {
-                        throw new Exception("Line " + node.token.line + ": " + "File path '" + filePath + "doesn't exist!");
+                        throw new InterpreterException("Line " + node.token.line + ": " + "File path '" + filePath + "doesn't exist!");
                     }
                 }
-                throw new Exception("Line " + node.token.line + ": " + "File path '" + filePath + "doesn't exist!");
+                throw new InterpreterException("Line " + node.token.line + ": " + "File path '" + filePath + "doesn't exist!");
             }
             #endregion
             #region saveFile
@@ -663,12 +690,12 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 if (param2.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
                 try
                 {
@@ -691,7 +718,7 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 string filePath = ((LangString)param1).stringValue;
                 if (!File.Exists(filePath))
@@ -709,7 +736,7 @@ namespace Lang.language
                     }
                     if (!File.Exists(filePath))
                     {
-                        throw new Exception("Line " + node.token.line + ": " + "File path '" + filePath + "' doesn't exist");
+                        throw new InterpreterException("Line " + node.token.line + ": " + "File path '" + filePath + "' doesn't exist");
                     }
                 }
                 Bitmap img = null;
@@ -731,12 +758,12 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 if (param2.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
                 try
                 {
@@ -775,27 +802,27 @@ namespace Lang.language
                 if (_W.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'number', '" + Convert.ToString(_W.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'number', '" + Convert.ToString(_W.objectType) + "' Found");
                 }
                 if (_H.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_H.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_H.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 #endregion
                 LangNumber W = (LangNumber)_W,
@@ -826,32 +853,32 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -875,17 +902,17 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 LangImage img = (LangImage)_img;
                 LangNumber X = (LangNumber)_X,
@@ -905,7 +932,7 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 LangImage img = (LangImage)_img;
 
@@ -920,7 +947,7 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 LangImage img = (LangImage)_img;
 
@@ -945,47 +972,47 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
                 }
                 if (_Y1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
                 }
                 if (_X2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
                 }
                 if (_Y2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_T.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -1023,47 +1050,47 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
                 }
                 if (_Y1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
                 }
                 if (_X2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
                 }
                 if (_Y2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_T.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -1107,62 +1134,62 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
                 }
                 if (_Y1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
                 }
                 if (_X2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
                 }
                 if (_Y2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_T.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_T.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_T.objectType) + "' Found");
                 }
                 if (_R2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_R2.objectType) + "' Found");
                 }
                 if (_G2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_G2.objectType) + "' Found");
                 }
                 if (_B2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B2.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -1206,42 +1233,42 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 if (_RAD.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_RAD.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_RAD.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_T.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -1281,57 +1308,57 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 if (_RAD.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_RAD.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_RAD.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_T.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_T.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_T.objectType) + "' Found");
                 }
                 if (_R2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_R2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'number', '" + Convert.ToString(_R2.objectType) + "' Found");
                 }
                 if (_G2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 10 to be 'number', '" + Convert.ToString(_G2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 10 to be 'number', '" + Convert.ToString(_G2.objectType) + "' Found");
                 }
                 if (_B2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 11 to be 'number', '" + Convert.ToString(_B2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 11 to be 'number', '" + Convert.ToString(_B2.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img;
@@ -1374,47 +1401,47 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_text.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 if (_R.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
                 }
                 if (_G.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 6 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
                 }
                 if (_B.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 7 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
                 }
                 if (_Size.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 8 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
                 }
                 if (_Font.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 9 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
                 }
 
                 #endregion
@@ -1449,22 +1476,22 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_img2.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'image', '" + Convert.ToString(_img2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'image', '" + Convert.ToString(_img2.objectType) + "' Found");
                 }
                 if (_X.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_X.objectType) + "' Found");
                 }
                 if (_Y.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_Y.objectType) + "' Found");
                 }
                 #endregion
                 LangImage img = (LangImage)_img,
@@ -1490,17 +1517,17 @@ namespace Lang.language
                 if (_text.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
                 }
                 if (_Font.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
                 }
                 if (_Size.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
                 }
                 #endregion
                 LangString text = (LangString)_text,
@@ -1525,17 +1552,17 @@ namespace Lang.language
                 if (_text.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_text.objectType) + "' Found");
                 }
                 if (_Font.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(_Font.objectType) + "' Found");
                 }
                 if (_Size.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Size.objectType) + "' Found");
                 }
                 #endregion
                 LangString text = (LangString)_text,
@@ -1562,27 +1589,27 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 if (_X1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_X1.objectType) + "' Found");
                 }
                 if (_Y1.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_Y1.objectType) + "' Found");
                 }
                 if (_X2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 4 to be 'number', '" + Convert.ToString(_X2.objectType) + "' Found");
                 }
                 if (_Y2.objectType != ObjectType.NUMBER)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 5 to be 'number', '" + Convert.ToString(_Y2.objectType) + "' Found");
                 }
 
                 #endregion
@@ -1612,7 +1639,7 @@ namespace Lang.language
                 if (_img.objectType != ObjectType.IMAGE)
                 {
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'image', '" + Convert.ToString(_img.objectType) + "' Found");
                 }
                 LangImage img = (LangImage)_img;
                 gui.Invoke((MethodInvoker)delegate()
@@ -1634,19 +1661,19 @@ namespace Lang.language
                 if (_event.objectType != ObjectType.STRING)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
                 }
                 if (_handler.objectType != ObjectType.CLASS)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'class', '" + Convert.ToString(_handler.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'class', '" + Convert.ToString(_handler.objectType) + "' Found");
                 }
                 LangString event_ = (LangString)_event;
                 LangClass handler = (LangClass)_handler;
                 if (!handler.methods.ContainsKey(event_.stringValue))
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Class '" + handler.name + "' can't handler the event '" + event_.stringValue + "'!");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Class '" + handler.name + "' can't handler the event '" + event_.stringValue + "'!");
                 }
                 EventHandlers[event_.stringValue] = _handler;
                 return new LangNumber(0, this);
@@ -1661,7 +1688,7 @@ namespace Lang.language
                 if (param1.objectType != ObjectType.CLASS)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'class', '" + Convert.ToString(param1.objectType) + "' Found");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'class', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
                 return new LangString(((LangClass)param1).name, this);
             }
@@ -1748,7 +1775,7 @@ namespace Lang.language
                         types += " " + Convert.ToString(obj.objectType);
                     }
                     langManager.lastErrorToken = stat.token;
-                    throw new Exception("Line " + stat.token.line + ": No overloaded instance of function '" + stat.name + "' that accepts types" + types);
+                    throw new InterpreterException("Line " + stat.token.line + ": No overloaded instance of function '" + stat.name + "' that accepts types" + types);
                 }
                 for (int i = 0; i < func.parameters.Count; i++)
                 {
@@ -1965,7 +1992,7 @@ namespace Lang.language
                 return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0.0 && ((LangNumber)_right).numberValue != 0.0), this);
             }
             langManager.lastErrorToken = node.token;
-            throw new InvalidOperationException("Invalid operation '" + Convert.ToString(_left.objectType) + "' & '" + Convert.ToString(_right.objectType) + "'");
+            throw new InterpreterException("Invalid operation '" + Convert.ToString(_left.objectType) + "' & '" + Convert.ToString(_right.objectType) + "'");
         }
         LangObject orInterpret(Node node)
         {
@@ -1978,7 +2005,7 @@ namespace Lang.language
                 return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0 || ((LangNumber)_right).numberValue != 0), this);
             }
             langManager.lastErrorToken = node.token;
-            throw new InvalidOperationException("Invalid operation '" + Convert.ToString(_left.objectType) + "' | '" + Convert.ToString(_right.objectType) + "'");
+            throw new InterpreterException("Invalid operation '" + Convert.ToString(_left.objectType) + "' | '" + Convert.ToString(_right.objectType) + "'");
         }
         #endregion
 
@@ -2108,7 +2135,7 @@ namespace Lang.language
                     if (((LangString)_left).stringValue.Length <= (int)_right_num.numberValue || (int)_right_num.numberValue < 0)
                     {
                         langManager.lastErrorToken = node.token;
-                        throw new Exception("Line " + node.token.line + ": " + "String subscript out of bounds!");
+                        throw new InterpreterException("Line " + node.token.line + ": " + "String subscript out of bounds!");
                     }
                     retobj = (LangObject)(new LangString("" + ((LangString)_left).stringValue[(int)_right_num.numberValue], this));
                 }
@@ -2121,7 +2148,7 @@ namespace Lang.language
             {
                 if (_left.objectType == ObjectType.STRING)
                 {
-                    throw new Exception("Line " + node.token.line + ": " + "Cannot implicitly convert from type 'string' to type 'number'");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Cannot implicitly convert from type 'string' to type 'number'");
                 }
                 else
                 {
@@ -2195,12 +2222,12 @@ namespace Lang.language
                 if (obj == null)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": Expected class on the left handside");
+                    throw new InterpreterException("Line " + node.token.line + ": Expected class on the left handside");
                 }
                 if (obj.objectType != ObjectType.CLASS)
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": Expected class on left handside");
+                    throw new InterpreterException("Line " + node.token.line + ": Expected class on left handside");
                 }
                 return obj;
             }
@@ -2218,7 +2245,7 @@ namespace Lang.language
             if (_left_ret.objectType != ObjectType.CLASS)
             {
                 langManager.lastErrorToken = node.token;
-                throw new Exception("Line " + node.token.line + ": Expected class on left handside");
+                throw new InterpreterException("Line " + node.token.line + ": Expected class on left handside");
             }
             Node _right = op.right;
             if (_right.nodeType == NodeType.ID)
@@ -2232,7 +2259,7 @@ namespace Lang.language
                 if (!_left_ret_class.vars.Contains(_right_ID.name))
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Class '" + _left_ret_class.name + "' doesn't contain the member '" + _right_ID.name + "'");
+                    throw new InterpreterException("Class '" + _left_ret_class.name + "' doesn't contain the member '" + _right_ID.name + "'");
                 }
                 return (LangObject)(_left_ret_class.vars[_right_ID.name]);
             }
@@ -2243,13 +2270,13 @@ namespace Lang.language
                 if (!(_left_ret_class.methods.ContainsKey(_right_stat.name)))
                 {
                     langManager.lastErrorToken = _right.token;
-                    throw new Exception("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
+                    throw new InterpreterException("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
                 }
                 return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
             }
 
 
-            throw new Exception("Something not handled here");
+            throw new InterpreterException("Something not handled here");
         }
         LangObject DotOperatorInterpret(Node node)
         {
@@ -2266,13 +2293,13 @@ namespace Lang.language
                 {
                     case 0:
                         langManager.lastErrorToken = _call.token;
-                        throw new Exception("Line " + _call.token.line + ": function '" + _function.name + "' expectes no parameters, " + _call.parameters.Count + " Given");
+                        throw new InterpreterException("Line " + _call.token.line + ": function '" + _function.name + "' expectes no parameters, " + _call.parameters.Count + " Given");
                     case 1:
                         langManager.lastErrorToken = _call.token;
-                        throw new Exception("Line " + _call.token.line + ": function '" + _function.name + "' expectes 1 parameter, " + _call.parameters.Count + " Given");
+                        throw new InterpreterException("Line " + _call.token.line + ": function '" + _function.name + "' expectes 1 parameter, " + _call.parameters.Count + " Given");
                     default:
                         langManager.lastErrorToken = _call.token;
-                        throw new Exception("Line " + _call.token.line + ": function '" + _function.name + "' expectes " + _function.parameters.Count + " parameter, " + _call.parameters.Count + " Given");
+                        throw new InterpreterException("Line " + _call.token.line + ": function '" + _function.name + "' expectes " + _function.parameters.Count + " parameter, " + _call.parameters.Count + " Given");
                 }
             }
             level++;
@@ -2301,21 +2328,21 @@ namespace Lang.language
                         if (param.type != "string")
                         {
                             langManager.lastErrorToken = ((Node)_call.parameters[i]).token;
-                            throw new ArgumentException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
+                            throw new InterpreterException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
                         }
                         break;
                     case ObjectType.NUMBER:
                         if (param.type != "number" && param.type != "integer")
                         {
                             langManager.lastErrorToken = ((Node)_call.parameters[i]).token;
-                            throw new ArgumentException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
+                            throw new InterpreterException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
                         }
                         break;
                     case ObjectType.MAP:
                         if (param.type != "map")
                         {
                             langManager.lastErrorToken = ((Node)_call.parameters[i]).token;
-                            throw new ArgumentException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
+                            throw new InterpreterException("Line " + ((Node)_call.parameters[i]).token.line + ": " + "Function '" + _call.name + "' expects parameter " + i + " to be " + param.type + ", " + Convert.ToString(ret.objectType) + " Given");
                         }
                         break;
                     default:
@@ -2423,7 +2450,7 @@ namespace Lang.language
             if (_function == null)
             {
                 langManager.lastErrorToken = _call.token;
-                throw new Exception("Method " + _call.name + " not here");
+                throw new InterpreterException("Method " + _call.name + " not here");
             }
             level++;
             if (level >= table.Count)
@@ -2504,7 +2531,7 @@ namespace Lang.language
             else
             {
                 langManager.lastErrorToken = node.token;
-                throw new Exception("Line " + node.token.line + ": " + "The variable '" + _node.name + "' doesn't exist!");
+                throw new InterpreterException("Line " + node.token.line + ": " + "The variable '" + _node.name + "' doesn't exist!");
             }
         }
         #endregion
@@ -2646,7 +2673,7 @@ namespace Lang.language
                 else
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Input cannot be converted into number!");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Input cannot be converted into number!");
                 }
             }
             else if (_node.scanType.name == "number")
@@ -2672,13 +2699,13 @@ namespace Lang.language
                 else
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new Exception("Line " + node.token.line + ": " + "Input cannot be converted into number!");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Input cannot be converted into number!");
                 }
             }
             else
             {
                 langManager.lastErrorToken = node.token;
-                throw new Exception("Line " + node.token.line + ": " + "Unknown scan type!");
+                throw new InterpreterException("Line " + node.token.line + ": " + "Unknown scan type!");
             }
         }
         LangObject importStatInterpret(Node node)
@@ -2702,7 +2729,7 @@ namespace Lang.language
                     }
                     catch (IOException)
                     {
-                        throw new Exception("The file " + file + " doesn't exists");
+                        throw new InterpreterException("The file " + file + " doesn't exists");
                     }
                 }
                 Lexer lexer = new Lexer(new LangManager(path), code);
@@ -2737,7 +2764,7 @@ namespace Lang.language
             if (!classes.ContainsKey(stat.constructor.name))
             {
                 langManager.lastErrorToken = stat.constructor.token;
-                throw new Exception("Line " + stat.constructor.token.line + ": There is no such class!");
+                throw new InterpreterException("Line " + stat.constructor.token.line + ": There is no such class!");
             }
             ClassStatement _class = (ClassStatement)classes[stat.constructor.name];
             LangClass _ret_class = new LangClass(_class, stat, this);
@@ -2807,12 +2834,12 @@ namespace Lang.language
             if (raise.objectType == ObjectType.STRING)
             {
                 langManager.lastErrorToken = node.token;
-                throw new Exception("Line " + node.token.line + ": " + ((LangString)raise).stringValue);
+                throw new InterpreterException("Line " + node.token.line + ": " + ((LangString)raise).stringValue);
             }
             else
             {
                 langManager.lastErrorToken = node.token;
-                throw new Exception("Cannot throw any type other than string, " + Convert.ToString(raise.objectType) + " Found");
+                throw new InterpreterException("Cannot throw any type other than string, " + Convert.ToString(raise.objectType) + " Found");
             }
         }
         #endregion

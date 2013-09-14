@@ -7,6 +7,26 @@ using System.Collections;
 
 namespace Lang.language
 {
+    internal class LangException : Exception
+    {
+
+        public LangException()
+            : base()
+        {
+
+        }
+        public LangException(string Message)
+            : base(Message)
+        {
+
+        }
+        public LangException(string Message, Exception innerException)
+            : base(Message, innerException)
+        {
+
+        }
+    }
+
     public class LangManager
     {
         private bool TRY = true;
@@ -85,7 +105,7 @@ namespace Lang.language
                     interpreter.updateRoot((StatementList)root);
                     interpreter.interpret(true);
                 }
-                catch (Exception e)
+                catch (LangException e)
                 {
                     if (INTERPRET)
                         lastException = e.Message;

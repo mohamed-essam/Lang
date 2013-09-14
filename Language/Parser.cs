@@ -7,6 +7,27 @@ using System.Collections;
 
 namespace Lang.language
 {
+    internal class ParserException : LangException  
+    {
+
+        public ParserException()
+            : base()
+        {
+
+        }
+        public ParserException(string Message)
+            : base(Message)
+        {
+
+        }
+        public ParserException(string Message, Exception innerException)
+            : base(Message, innerException)
+        {
+
+        }
+    }
+
+    
     #region Node
     abstract public class Node : IDisposable
     {
@@ -759,7 +780,7 @@ namespace Lang.language
                 {
                     langManager.lastLiveErrorToken = lookAhead;
                 }
-                throw new Exception("Line "+lookAhead.line+": "+"Syntax error: expected "+type+" instead of "+lookAhead.type);
+                throw new ParserException("Line "+lookAhead.line+": "+"Syntax error: expected "+type+" instead of "+lookAhead.type);
             }
         }
 
@@ -1290,7 +1311,7 @@ namespace Lang.language
                 {
                     langManager.lastLiveErrorToken = lookAhead;
                 }
-                throw new Exception("Line " + newToken.line + ": " + "expected a constructor after 'new' token");
+                throw new ParserException("Line " + newToken.line + ": " + "expected a constructor after 'new' token");
             }
             return new ClassInitStatement(stat, newToken);
         }
@@ -1536,7 +1557,7 @@ namespace Lang.language
                 {
                     langManager.lastLiveErrorToken = lookAhead;
                 }
-                throw new Exception("Line " + lookAhead.line + ": " + "Expected an expression, " + Convert.ToString(lookAhead.type) + " was found instead");
+                throw new ParserException("Line " + lookAhead.line + ": " + "Expected an expression, " + Convert.ToString(lookAhead.type) + " was found instead");
             }
             else
             {
