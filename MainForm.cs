@@ -373,6 +373,14 @@ namespace Lang
                     */
                 }
             }
+            if (e.KeyCode == Keys.F && e.Modifiers == Keys.Control)
+            {
+                Finder.Visible = !Finder.Visible;
+                if (Finder.Visible)
+                {
+                    Finder.Focus();
+                }
+            }
         }
 
         private void LiveErrors_Tick(object sender, EventArgs e)

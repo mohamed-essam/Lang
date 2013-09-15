@@ -68,6 +68,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Find.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Find.Designer.cs">
+      <DependentUpon>Find.cs</DependentUpon>
+    </Compile>
     <Compile Include="Language\CodeConsoleUI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -97,6 +103,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Find.resx">
+      <DependentUpon>Find.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Language\CodeConsoleUI.resx">
       <DependentUpon>CodeConsoleUI.cs</DependentUpon>
     </EmbeddedResource>

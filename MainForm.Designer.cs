@@ -41,6 +41,7 @@
             this.LiveErrors = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.ErrorsShower = new System.Windows.Forms.ToolStripStatusLabel();
+            this.Finder = new Lang.Find();
             this.LineNumberer = new LineNumbers.LineNumbers_For_RichTextBox();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -151,6 +152,16 @@
             this.ErrorsShower.Name = "ErrorsShower";
             this.ErrorsShower.Size = new System.Drawing.Size(0, 17);
             // 
+            // Finder
+            // 
+            this.Finder.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.Finder.DockTo = this.codeRTB;
+            this.Finder.Location = new System.Drawing.Point(234, 64);
+            this.Finder.Name = "Finder";
+            this.Finder.Size = new System.Drawing.Size(147, 26);
+            this.Finder.TabIndex = 12;
+            this.Finder.Visible = false;
+            // 
             // LineNumberer
             // 
             this.LineNumberer._SeeThroughMode_ = false;
@@ -193,6 +204,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(394, 469);
+            this.Controls.Add(this.Finder);
             this.Controls.Add(this.LineNumberer);
             this.Controls.Add(this.codeRTB);
             this.Controls.Add(this.statusStrip1);
@@ -230,6 +242,7 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel ErrorsShower;
         internal LineNumbers.LineNumbers_For_RichTextBox LineNumberer;
+        private Find Finder;
     }
 }
 
