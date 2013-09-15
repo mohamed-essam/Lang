@@ -349,6 +349,8 @@ namespace Lang
                     codeRTB.SelectionStart = 0;
                     codeRTB.SelectionLength = codeRTB.Text.Length;
                     codeRTB.SelectedText = ((StatementList)parser.parse()).ToString(false);
+                    codeRTB.SelectionStart = 0;
+                    codeRTB.SelectionLength = 0;
                 }
                 catch (LangException)
                 {

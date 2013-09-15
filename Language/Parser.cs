@@ -170,6 +170,13 @@ namespace Lang.language
 
         public override string ToString()
         {
+            switch (nodeType)
+            {
+                case NodeType.BRACKETS:
+                    return left.ToString() + "[" + right.ToString() + "]";
+                case NodeType.DOT:
+                    return left.ToString() + "." + right.ToString();
+            }
             return left.ToString() + " " + lexeme + " " + right.ToString();
         }
 
@@ -887,6 +894,12 @@ namespace Lang.language
                     vrs += ",";
                 vrs += vr;
             }
+            if (vrs.Length > 0)
+            {
+                vrs = "    " + vrs;
+                vrs += ";";
+            }
+
             string consts = "";
             foreach (FunctionStatement stat in constructors)
             {
@@ -894,18 +907,21 @@ namespace Lang.language
                 consts += stat.ToString();
             }
             string mthds = "";
-            foreach (DictionaryEntry dic in constructors)
+            foreach (DictionaryEntry dic in methods)
             {
                 mthds += "\n\n";
-                FunctionStatement stat = (FunctionStatement)dic.Value;
-                mthds += stat.ToString();
+                ArrayList funcs = (ArrayList)dic.Value;
+                foreach (FunctionStatement stat in funcs)
+                {
+                    mthds += stat.ToString();
+                }
             }
             string ret = vrs + consts + mthds;
             for (int i = 0; i < ret.Length - 1; i++)
             {
                 if (ret[i] == '\n')
                 {
-                    ret = ret.Substring(0, i) + "    " + ret.Substring(i);
+                    ret = ret.Substring(0, i+1) + "    " + ret.Substring(i+1);
                     i += 4;
                 }
             }
@@ -914,7 +930,7 @@ namespace Lang.language
             {
                 header += " extends " + parent.name;
             }
-            return header + ret + "\nendclass\n";
+            return header + "\n" + ret + "\nendclass\n";
         }
     }
 
