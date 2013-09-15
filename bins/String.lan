@@ -1,22 +1,22 @@
 class __String
     
-    function __String()
+    func __String()
         # Nothing to do here
-    endfunction
+    endfunc
 
-    function Substring(str as string, start as integer, length as integer)
+    func Substring(str as string, start as integer, length as integer)
         let output = "";
         for(let i = start; i < start + length; let i = i+1)
             let output = output + str[i];
         endloop
         return output;
-    endfunction
+    endfunc
 
-    function Length(str as string)
+    func Length(str as string)
         return strlen(str);
-    endfunction
+    endfunc
     
-    function Find(str as string, search as string)
+    func Find(str as string, search as string)
         for(let i = 0; i < this.Length(search); let i = i + 1)
             let tr = 1;
             for(let j = 0; j < this.Length(str); let j = j + 1)
@@ -30,7 +30,7 @@ class __String
             endif
         endloop
         return -1;
-    endfunction
+    endfunc
     
     
 endclass

@@ -340,6 +340,39 @@ namespace Lang
                 }
                 LineNumberer.Refresh();
             }
+            if (e.KeyCode == Keys.K && e.Modifiers == Keys.Control)
+            {
+                try
+                {
+                    Parser parser = new Parser(new LangManager(""));
+                    parser.updateTokens(new Lexer(new LangManager(""), codeRTB.Text).lex());
+                    codeRTB.SelectionStart = 0;
+                    codeRTB.SelectionLength = codeRTB.Text.Length;
+                    codeRTB.SelectedText = ((StatementList)parser.parse()).ToString(false);
+                }
+                catch (LangException)
+                {
+                    // Nothing to do here
+                    /*
+                    
+                    ░░░░░▄▄▄▄▄▄░░░░░░░░░░
+                    ░░▄█▀░░░░░▄▀▄░░░░░░░░
+                    ░█░▀▀▀▀▀▀▀▀░░█▄░░░░░░
+                    █▀░░░░░░░░░░░░█░░░░░░
+                    █░░░░░░░░░░░░░█░░░░░░
+                    ▀█░░░░░░░░░░░░█░░░░░░
+                    ░▀▄░░░░░░░░░▄█░░░░░░░
+                    ░░░▀█▄▄▄▄▄▄██▄▄░░░░░░
+                    ░░▄▄█▀███▀██████░░░░░
+                    ░░▀██░░██▀█████▄▄░░░░
+                    ░░░░░░░░░░▄▄███▀█▄▀▄░
+                    ░░▄█▄▄▄██████▀▄▀▄▀█▄▀
+                    ░██░░░▀██▀░░░░░░▄▀▄█░
+                    ░█▄░░░░░█▄░░░░░░░▀░░░
+                    ░░▀█▄░░░░▀▀▀░░░░░░░░░
+                    */
+                }
+            }
         }
 
         private void LiveErrors_Tick(object sender, EventArgs e)

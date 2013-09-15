@@ -97,9 +97,7 @@ namespace Lang.language
             reservedKeywords["endtry"] = TokenType.ENDTRY;
             reservedKeywords["endcatch"] = TokenType.ENDCATCH;
             reservedKeywords["func"] = TokenType.FUNCTION;
-            reservedKeywords["function"] = TokenType.FUNCTION;
             reservedKeywords["endfunc"] = TokenType.ENDFUNCTION;
-            reservedKeywords["endfunction"] = TokenType.ENDFUNCTION;
             reservedKeywords["class"] = TokenType.CLASS;
             reservedKeywords["endclass"] = TokenType.ENDCLASS;
         }

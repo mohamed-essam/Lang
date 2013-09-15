@@ -1,264 +1,264 @@
 class Pixel
     R, G, B;
     
-    function Pixel(R as integer, G as integer, B as integer)
+    func Pixel(R as integer, G as integer, B as integer)
         let this.R = R;
         let this.G = G;
         let this.B = B;
-    endfunction
+    endfunc
     
-    function Pixel(mp)
+    func Pixel(mp)
         let this.R = mp[0];
         let this.G = mp[1];
         let this.B = mp[2];
-    endfunction
+    endfunc
 endclass
 
 class Image
     Bitmap;
     OriginalPath;
     
-    function Image(path as string)
+    func Image(path as string)
         let this.Bitmap = getImage(path);
         let this.OriginalPath = path;
-    endfunction
+    endfunc
     
-    function Image(W as integer, H as integer)
+    func Image(W as integer, H as integer)
         let this.Bitmap = newImage(W, H, 0, 0, 0);
         let this.OriginalPath = "Untitled.png";
-    endfunction
+    endfunc
     
-    function Image(W as integer, H as integer, pixel as Pixel)
+    func Image(W as integer, H as integer, pixel as Pixel)
         let this.Bitmap = newImage(W, H, pixel.R, pixel.G, pixel.B);
         let this.OriginalPath = "Untitled.png";
-    endfunction
+    endfunc
     
-    function Image(W as integer, H as integer, R as integer, G as integer, B as integer)
+    func Image(W as integer, H as integer, R as integer, G as integer, B as integer)
         let this.Bitmap = newImage(W, H, R, G, B);
         let this.OriginalPath = "Untitled.png";
-    endfunction
+    endfunc
     
-    function GetPixel(X as integer, Y as integer)
+    func GetPixel(X as integer, Y as integer)
         this.__CheckCoords(X, Y);
         return new Pixel(getImagePixel(this.Bitmap, X, Y));
-    endfunction
+    endfunc
     
-    function UpdatePixel(X as integer, Y as integer, pixel as Pixel)
+    func UpdatePixel(X as integer, Y as integer, pixel as Pixel)
         this.__CheckCoords(X, Y);
         setImagePixel(this.Bitmap, X, Y, pixel.R, pixel, G, pixel, B);
-    endfunction
+    endfunc
     
-    function UpdatePixel(X as integer, Y as integer, R as integer, G as integer, B as integer)
+    func UpdatePixel(X as integer, Y as integer, R as integer, G as integer, B as integer)
         this.__CheckCoords(X, Y);
         setImagePixel(this.Bitmap, X, Y, R, G, B);
-    endfunction
+    endfunc
     
-    function GetWidth()
+    func GetWidth()
         return getImageWidth(this.Bitmap);
-    endfunction
+    endfunc
     
-    function GetHeight()
+    func GetHeight()
         return getImageHeight(this.Bitmap);
-    endfunction
+    endfunc
     
-    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+    func drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
         drawImageLine(this.Bitmap,X1,Y1,X2,Y2,0,0,0,1);
-    endfunction
+    endfunc
     
-    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
+    func drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
         drawImageLine(this.Bitmap,X1,Y1,X2,Y2,pixel.R,pixel.G,pixel.B,1);
-    endfunction
+    endfunc
     
-    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
+    func drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
         drawImageLine(this.Bitmap,X1,Y1,X2,Y2,R,G,B,1);
-    endfunction
+    endfunc
     
-    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
+    func drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
         drawImageLine(this.Bitmap,X1,Y1,X2,Y2,pixel.R,pixel.G,pixel.B,T);
-    endfunction
+    endfunc
     
-    function drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
+    func drawLine(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
         drawImageLine(this.Bitmap,X1,Y1,X2,Y2,R,G,B,T);
-    endfunction
+    endfunc
     
-    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+    func drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
         drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, 0,0,0,1);
-    endfunction
+    endfunc
     
-    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
+    func drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel)
         drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel.R,pixel.G,pixel.B,1);
-    endfunction
+    endfunc
     
-    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
+    func drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer)
         drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, R, G, B,1);
-    endfunction
+    endfunc
     
-    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
+    func drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel as Pixel, T as integer)
         drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel.R,pixel.G,pixel.B,T);
-    endfunction
+    endfunc
     
-    function drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
+    func drawRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R as integer, G as integer, B as integer, T as integer)
         drawImageRectangle(this.Bitmap, X1, Y1, X2, Y2, R, G, B,T);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, 0, 0, 0, 1, 0 ,0 ,0);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, 1, pixel1.R, pixel1.G, pixel1.B);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, 1, R1 ,G1 ,B1);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, T, R1 ,G1 ,B1);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer, pixel2 as Pixel)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, pixel1 as Pixel, T as integer, pixel2 as Pixel)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, pixel1.R, pixel1.G, pixel1.B, T, pixel1.R, pixel1.G, pixel1.B);
-    endfunction
+    endfunc
     
-    function drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
+    func drawFilledRectangle(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer, R1 as integer, G1 as integer, B1 as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
         drawImageFilledRectangle(this.Bitmap, X1, Y1, X2, Y2, R1, G1, B1, T, R2 ,G2 ,B2);
-    endfunction
+    endfunc
     
-    function drawCircle(X as integer, Y as integer, RAD as integer)
+    func drawCircle(X as integer, Y as integer, RAD as integer)
         drawImageCircle(this.Bitmap, X, Y, RAD, 0, 0, 0, 1);
-    endfunction
+    endfunc
     
-    function drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
+    func drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
         drawImageCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, 1);
-    endfunction
+    endfunc
     
-    function drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
+    func drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
         drawImageCircle(this.Bitmap, X, Y, RAD, R, G, B, 1);
-    endfunction
+    endfunc
     
-    function drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
+    func drawCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
         drawImageCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T);
-    endfunction
+    endfunc
     
-    function drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
+    func drawCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
         drawImageCircle(this.Bitmap, X, Y, RAD, R, G, B, T);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, 0, 0, 0, 1, 0, 0, 0);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, 1, pixel.R, pixel.G, pixel.B);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, 1, R, G, B);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T, pixel.R, pixel.G, pixel.B);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, T, R, G, B);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer, pixel2 as Pixel)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, pixel as Pixel, T as integer, pixel2 as Pixel)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, pixel.R, pixel.G, pixel.B, T, pixel2.R, pixel2.G, pixel2.B);
-    endfunction
+    endfunc
     
-    function drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
+    func drawFilledCircle(X as integer, Y as integer, RAD as integer, R as integer, G as integer, B as integer, T as integer, R2 as integer, G2 as integer, B2 as integer)
         drawImageFilledCircle(this.Bitmap, X, Y, RAD, R, G, B, T, R2, G2, B2);
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer)
+    func drawText(text as string, X as integer, Y as integer)
         drawImageText(this.Bitmap, text, X, Y, 0, 0, 0, 12, "Arial");
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, pixel as Pixel)
+    func drawText(text as string, X as integer, Y as integer, pixel as Pixel)
         drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, 12, "Arial");
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer)
+    func drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer)
         drawImageText(this.Bitmap, text, X, Y, R, G, B, 12, "Arial");
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer)
+    func drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer)
         drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, Size, "Arial");
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer)
+    func drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer)
         drawImageText(this.Bitmap, text, X, Y, R, G, B, Size, "Arial");
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer, Font as string)
+    func drawText(text as string, X as integer, Y as integer, pixel as Pixel, Size as integer, Font as string)
         drawImageText(this.Bitmap, text, X, Y, pixel.R, pixel.G, pixelB, Size, Font);
-    endfunction
+    endfunc
     
-    function drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer, Font as string)
+    func drawText(text as string, X as integer, Y as integer, R as integer, G as integer, B as integer, Size as integer, Font as string)
         drawImageText(this.Bitmap, text, X, Y, R, G, B, Size, Font);
-    endfunction
+    endfunc
     
-    function drawImage(image as Image)
+    func drawImage(image as Image)
         drawImageImage(this.Bitmap, image.Bitmap, 0, 0);
-    endfunction
+    endfunc
     
-    function drawImage(image as Image, X as integer, Y as integer)
+    func drawImage(image as Image, X as integer, Y as integer)
         drawImageImage(this.Bitmap, image.Bitmap, X, Y);
-    endfunction
+    endfunc
     
-    function getTextWidth(text as string)
+    func getTextWidth(text as string)
         return getTextWidth(text, "Arial", 12);
-    endfunction
+    endfunc
     
-    function getTextWidth(text as string, Font as string)
+    func getTextWidth(text as string, Font as string)
         return getTextWidth(text, Font, 12);
-    endfunction
+    endfunc
     
-    function getTextWidth(text as string, Size as integer)
+    func getTextWidth(text as string, Size as integer)
         return getTextWidth(text, "Arial", Size);
-    endfunction
+    endfunc
     
-    function getTextWidth(text as string, Font as string, Size as integer)
+    func getTextWidth(text as string, Font as string, Size as integer)
         return getTextWidth(text, Font, Size);
-    endfunction
-        function getTextHeight(text as string)
+    endfunc
+        func getTextHeight(text as string)
         return getTextHeight(text, "Arial", 12);
-    endfunction
+    endfunc
     
-    function getTextHeight(text as string, Font as string)
+    func getTextHeight(text as string, Font as string)
         return getTextHeight(text, Font, 12);
-    endfunction
+    endfunc
     
-    function getTextHeight(text as string, Size as integer)
+    func getTextHeight(text as string, Size as integer)
         return getTextHeight(text, "Arial", Size);
-    endfunction
+    endfunc
     
-    function getTextHeight(text as string, Font as string, Size as integer)
+    func getTextHeight(text as string, Font as string, Size as integer)
         return getTextHeight(text, Font, Size);
-    endfunction
+    endfunc
     
-    function cropImage(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
+    func cropImage(X1 as integer, Y1 as integer, X2 as integer, Y2 as integer)
         cropImage(this.Bitmap, X1, Y1, X2, Y2);
-    endfunction
+    endfunc
     
-     function Save()
+     func Save()
         saveImage(this.Bitmap, this.OriginalPath);
-    endfunction
+    endfunc
     
-    function Save(path as string)
+    func Save(path as string)
         saveImage(this.Bitmap, path);
-    endfunction
+    endfunc
     
-    function __CheckCoords(X, Y)
+    func __CheckCoords(X, Y)
         if(X < 0 | X >= this.GetWidth() | Y < 0 | Y > this.GetHeight())
             raise "Coordinates out of bounds!";
         endif
-    endfunction
+    endfunc
 endclass

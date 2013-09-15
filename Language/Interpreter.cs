@@ -1815,8 +1815,6 @@ namespace Lang.language
 
         LangObject decider(Node node)
         {
-            if (!keepWorking)
-                return new LangState("stop", this);
             switch (node.nodeType)
             {
                 case NodeType.DIV:
@@ -1863,6 +1861,8 @@ namespace Lang.language
                     return statDecider((Statement)node);
                 case NodeType.STATEMENT_LIST:
                     return statListDecider((StatementList)node);
+                case NodeType.PARAS:
+                    return decider(((UnaryOperator)node).child);
             }
             return new LangNumber(0, this);
         }
@@ -2093,16 +2093,33 @@ namespace Lang.language
         }
         LangObject minusInterpret(Node node)
         {
-            BinaryOperator _node = (BinaryOperator)node;
-            try
+            if (node is BinaryOperator)
             {
-                return decider(_node.left).Minus(decider(_node.right));
+                BinaryOperator _node = (BinaryOperator)node;
+                try
+                {
+                    return decider(_node.left).Minus(decider(_node.right));
+                }
+                catch (Exception)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw;
+                }
             }
-            catch (Exception)
+            else if (node is UnaryOperator)
             {
-                langManager.lastErrorToken = node.token;
-                throw;
+                UnaryOperator _node = (UnaryOperator)node;
+                try
+                {
+                    return new LangNumber(0, this).Minus(decider(_node.child));
+                }
+                catch (LangException)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw;
+                }
             }
+            return null;
         }
         #endregion
 

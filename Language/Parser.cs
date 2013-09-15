@@ -59,7 +59,8 @@ namespace Lang.language
         STATEMENT, STATEMENT_LIST,
         DIV_INT,
         MOD,
-        DOT
+        DOT,
+        PARAS
     }
     #endregion
 
@@ -182,6 +183,37 @@ namespace Lang.language
 
     }
 
+    public class UnaryOperator : Node
+    {
+        internal Node child;
+        internal string lexeme;
+
+        public UnaryOperator(NodeType _nodeType, Node _child, Token _token)
+            : base(_nodeType, _token)
+        {
+            child = _child;
+            lexeme = _token.lexeme;
+        }
+
+        public override void Dispose()
+        {
+            child.Dispose();
+            lexeme = null;
+        }
+
+        public override string ToString()
+        {
+            switch (lexeme)
+            {
+                case "(":
+                    return "(" + child.ToString() + ")";
+                case "-":
+                    return "-" + child.ToString();
+            }
+            return "";
+        }
+    }
+
     #region statements
     public enum StatementType
     {
@@ -231,12 +263,29 @@ namespace Lang.language
             statements = _statements;
         }
 
-        public override string ToString()
+        public string ToString(bool addSpaces = false)
         {
             string ret = "";
             foreach (Statement stat in statements)
             {
                 ret += stat.ToString();
+                if (stat.type == StatementType.BIND || stat.type == StatementType.BREAK || stat.type == StatementType.CLASS_FUNCTION || stat.type == StatementType.CLASS_NEW || stat.type == StatementType.CONTINUE || stat.type == StatementType.FUNCTION_CALL || stat.type == StatementType.IMPORT || stat.type == StatementType.PRINT || stat.type == StatementType.RAISE || stat.type == StatementType.RETURN || stat.type == StatementType.SCAN || stat.type == StatementType.STOP)
+                {
+                    ret += ";";
+                }
+                ret += "\n";
+            }
+            if (addSpaces)
+            {
+                ret = "    " + ret;
+                for (int i = 0; i < ret.Length - 1; i++)
+                {
+                    if (ret[i] == '\n')
+                    {
+                        ret = ret.Substring(0, i+1) + "    " + ret.Substring(i+1);
+                        i += 4;
+                    }
+                }
             }
             return ret;
         }
@@ -269,6 +318,11 @@ namespace Lang.language
         {
             expr.Dispose();
             expr = null;
+        }
+
+        public override string ToString()
+        {
+            return "raise " + expr.ToString();
         }
     }
 
@@ -305,6 +359,16 @@ namespace Lang.language
             }
             extras = null;
         }
+
+        public override string ToString()
+        {
+            string others = "";
+            foreach (BindStatement stat in extras)
+            {
+                others += ", " + stat.Id.ToString() + " = " + stat.expr.ToString();
+            }
+            return "let " + Id.ToString() + " = " + expr.ToString() + others;
+        }
     }
 
     public class PrintStatement : Statement
@@ -330,6 +394,16 @@ namespace Lang.language
             }
             extras.Clear();
             extras = null;
+        }
+
+        public override string ToString()
+        {
+            string others = "";
+            foreach (PrintStatement stat in extras)
+            {
+                others += ", " + stat.expr.ToString();
+            }
+            return "print " + expr.ToString() + others;
         }
     }
 
@@ -365,6 +439,21 @@ namespace Lang.language
             extras.Clear();
             extras = null;
         }
+
+        public override string ToString()
+        {
+            string others = "";
+            foreach (ScanStatement stat in extras)
+            {
+                others += ", " + stat.expr.ToString();
+            }
+            string ret = "scan " + expr.ToString() + others;
+            if (scanType != null)
+            {
+                ret += " as " + scanType.ToString();
+            }
+            return ret;
+        }
     }
 
     public class FunctionCallStatement : Statement
@@ -389,6 +478,18 @@ namespace Lang.language
             }
             parameters = null;
         }
+
+        public override string ToString()
+        {
+            string param = "";
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                if (i > 0)
+                    param += ", ";
+                param += ((Node)parameters[i]).ToString();
+            }
+            return name + "(" + param + ")";
+        }
     }
 
     public class ImportStatement : Statement
@@ -407,6 +508,18 @@ namespace Lang.language
             imports.Clear();
             imports = null;
         }
+
+        public override string ToString()
+        {
+            string imps = "";
+            for (int i = 0; i < imports.Count; i++)
+            {
+                if (i > 0)
+                    imps += ", ";
+                imps += (string)imports[i];
+            }
+            return "import " + imps;
+        }
     }
 
     public class StoppingStatement : Statement
@@ -420,6 +533,11 @@ namespace Lang.language
         public override void Dispose()
         {
             token = null;
+        }
+
+        public override string ToString()
+        {
+            return "stop";
         }
     }
 
@@ -439,6 +557,11 @@ namespace Lang.language
             constructor.Dispose();
             constructor = null;
         }
+
+        public override string ToString()
+        {
+            return "new " + constructor.ToString();
+        }
     }
 
     public class ClassFuncStatement : Statement
@@ -456,6 +579,11 @@ namespace Lang.language
             expr.Dispose();
             expr = null;
         }
+
+        public override string ToString()
+        {
+            return expr.ToString();
+        }
     }
 
     public class ReturnStatement : Statement
@@ -472,6 +600,11 @@ namespace Lang.language
         {
             expr.Dispose();
             expr = null;
+        }
+
+        public override string ToString()
+        {
+            return "return " + expr.ToString();
         }
     }
 
@@ -494,6 +627,11 @@ namespace Lang.language
             expr.Dispose();
             expr = null;
             stats.Dispose();
+        }
+
+        public override string ToString()
+        {
+            return "if(" + expr.ToString() + ")\n" + stats.ToString(true);
         }
     }
 
@@ -522,6 +660,23 @@ namespace Lang.language
                 elseData.Dispose();
             elseData = null;
         }
+
+        public override string ToString()
+        {
+            string ifs = "";
+            for (int i = 0; i < data.Count; i++)
+            {
+                if (i > 0)
+                    ifs += "el";
+                ifs += ((IfData)data[i]).ToString();
+            }
+            if (elseData != null)
+            {
+                ifs += "else\n" + elseData.ToString(true);
+            }
+            ifs += "endif\n";
+            return ifs;
+        }
     }
 
     public class ForStatement : Statement
@@ -549,6 +704,19 @@ namespace Lang.language
             init_stat = inc_stat = null;
             check_expr = stats = null;
         }
+
+        public override string ToString()
+        {
+            string init = "", check = "", inc = "", stats;
+            if (init_stat != null)
+                init = init_stat.ToString();
+            if (check_expr != null)
+                check = check_expr.ToString();
+            if (inc_stat != null)
+                inc = inc_stat.ToString();
+            stats = this.stats.ToString(true);
+            return "for(" + init + "; " + check + "; " + inc + ")\n" + stats + "endloop\n";
+        }
     }
 
     public class WhileStatement : Statement
@@ -570,6 +738,11 @@ namespace Lang.language
             stats.Dispose();
             check_expr = stats = null;
         }
+
+        public override string ToString()
+        {
+            return "while(" + check_expr.ToString() + ")\n" + stats.ToString(true) + "endloop\n";
+        }
     }
 
     public class Parameter
@@ -587,6 +760,15 @@ namespace Lang.language
         {
             name = null;
             type = null;
+        }
+
+        public override string ToString()
+        {
+            if (type == "any")
+            {
+                return name + " as " + type;
+            }
+            return name;
         }
     }
 
@@ -632,6 +814,29 @@ namespace Lang.language
                 globals = null;
             }
         }
+
+        public override string ToString()
+        {
+            string param = "";
+            foreach (Parameter para in parameters)
+            {
+                if (param.Length > 0)
+                    param += ", ";
+                param += para.ToString();
+            }
+            string globs = "";
+            foreach (string glob in globals)
+            {
+                if (globs.Length > 0)
+                    globs += ", ";
+                globs += glob;
+            }
+            if (globs.Length > 0)
+            {
+                globs = "\n    global " + globs + ";";
+            }
+            return "func " + name + "(" + param + ")" + globs + "\n" + stats.ToString(true) + "endfunc\n";
+        }
     }
 
     public class ClassStatement : Statement
@@ -672,6 +877,45 @@ namespace Lang.language
             constructors.Clear();
             constructors = null;
         }
+
+        public override string ToString()
+        {
+            string vrs = "";
+            foreach (string vr in vars)
+            {
+                if (vrs.Length > 0)
+                    vrs += ",";
+                vrs += vr;
+            }
+            string consts = "";
+            foreach (FunctionStatement stat in constructors)
+            {
+                consts += "\n\n";
+                consts += stat.ToString();
+            }
+            string mthds = "";
+            foreach (DictionaryEntry dic in constructors)
+            {
+                mthds += "\n\n";
+                FunctionStatement stat = (FunctionStatement)dic.Value;
+                mthds += stat.ToString();
+            }
+            string ret = vrs + consts + mthds;
+            for (int i = 0; i < ret.Length - 1; i++)
+            {
+                if (ret[i] == '\n')
+                {
+                    ret = ret.Substring(0, i) + "    " + ret.Substring(i);
+                    i += 4;
+                }
+            }
+            string header = "class " + name;
+            if (parent != null)
+            {
+                header += " extends " + parent.name;
+            }
+            return header + ret + "\nendclass\n";
+        }
     }
 
     public class TryStatement : Statement
@@ -705,6 +949,16 @@ namespace Lang.language
                 catchStats.Dispose();
             stats = catchStats = null;
             catchID = null;
+        }
+
+        public override string ToString()
+        {
+            string try_body = "try\n" + stats.ToString() + "endtry\n";
+            if (catchID != null)
+            {
+                try_body += "catch(" + catchID.name + ")\n" + catchStats.ToString() + "endcatch\n";
+            }
+            return try_body;
         }
     }
 
@@ -844,9 +1098,13 @@ namespace Lang.language
                     Node lastTry = expression(false);
                     if (lastTry != null)
                     {
-                        match(TokenType.SEMICOLON);
-                        move();
-                        return new ClassFuncStatement(lastTry);
+                        if (lastTry is BinaryOperator)
+                        {
+                            match(TokenType.SEMICOLON);
+                            move();
+                            return new ClassFuncStatement(lastTry);
+                        }
+                        return null;
                     }
                     return null;
                 }
@@ -1501,7 +1759,7 @@ namespace Lang.language
             {
                 Token lookedAhead = lookAhead;
                 move();
-                Node node = new BinaryOperator(NodeType.MINUS, new Number("0", null), factor(), lookedAhead);
+                Node node = new UnaryOperator(NodeType.MINUS, factor(), lookedAhead);
                 return node;
             }
             else if (isNext(TokenType.NUMBER))
@@ -1529,8 +1787,9 @@ namespace Lang.language
             }
             else if (isNext(TokenType.L_PARA))
             {
-                move();// (
+                Token tok = read();// (
                 Node node = expression();
+                node = new UnaryOperator(NodeType.PARAS, node, tok);
                 match(TokenType.R_PARA);
                 move();// )
                 return node;

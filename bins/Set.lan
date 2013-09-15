@@ -5,8 +5,8 @@ class __SET_Node
     _left, _right;
     exists;
 
-    function Node ()
-    endfunction
+    func Node ()
+    endfunc
 
 endclass
 
@@ -14,21 +14,21 @@ class Set
     root , Size;
     ArrayRep;
 
-    function Set ()
+    func Set ()
         let root = new __SET_Node();
         let root.exists = 0;
         let Size = 0;
-    endfunction
+    endfunc
 
-    function __LRsetup(node)
+    func __LRsetup(node)
         let node._left = new __SET_Node();
         let node._left.exists = 0;
         let node._right = new __SET_Node();
         let node._right.exists = 0;
         return node;
-    endfunction
+    endfunc
 
-    function putInLocation(curNode, object)
+    func putInLocation(curNode, object)
         if(object > curNode._data)
             if(curNode._right.exists == 0)
                 let curNode._right._data = object;
@@ -52,9 +52,9 @@ class Set
         else
             return curNode;
         endif
-    endfunction
+    endfunc
 
-    function Add(object)
+    func Add(object)
         if(root.exists == 0)
             let root.exists = 1;
             let root._data = object;
@@ -64,9 +64,9 @@ class Set
             let root = this.putInLocation(root, object);
             let Size = Size + 1;
         endif
-    endfunction
+    endfunc
 
-    function Top()
+    func Top()
         if(root.exists == 0)
             return 0;
         else
@@ -76,9 +76,9 @@ class Set
             endloop
             return curNode._data;
         endif
-    endfunction
+    endfunc
 
-    function _remove(CurNode)
+    func _remove(CurNode)
         if(CurNode._left.exists == 0)
             if(CurNode._right.exists == 0)
                 let CurNode.exists = 0;
@@ -90,18 +90,18 @@ class Set
             let CurNode._left = this._remove(CurNode._left);
             return CurNode;
         endif
-    endfunction
+    endfunc
 
-    function Pop()
+    func Pop()
         if(root.exists == 0)
             raise "Cannot Pop(), Set is empty!";
         else
             let root = this._remove(root);
             let Size = Size - 1;
         endif
-    endfunction
+    endfunc
     
-    function __traverse (node)
+    func __traverse (node)
         if (node ._left .exists)
             this.__traverse (node ._left);
         endif
@@ -109,13 +109,13 @@ class Set
         if (node ._right .exists)
             this.__traverse (node ._right);
         endif
-    endfunction
+    endfunc
     
-    function ToArray ()
+    func ToArray ()
         let this .ArrayRep = new Array ();
         if (root .exists)
             this .__traverse (root);
         endif
         return this .ArrayRep;
-    endfunction
+    endfunc
 endclass

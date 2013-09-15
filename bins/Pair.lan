@@ -3,16 +3,16 @@
 class Pair
     first, second;
     
-    function Pair()
+    func Pair()
         #Nothing To Do Here :D
-    endfunction
+    endfunc
     
-    function Pair(_first, _second)
+    func Pair(_first, _second)
         let first = _first;
         let second = _second;
-    endfunction
+    endfunc
 
-    function __operator_smaller(o)
+    func __operator_smaller(o)
         if(first < o.first)
             return 1;
         elif(first > o.first)
@@ -22,13 +22,13 @@ class Pair
         else
             return 0;
         endif
-    endfunction
+    endfunc
 
-    function __operator_plus(o)
+    func __operator_plus(o)
         return new Pair(first + o.first, second + o.second);
-    endfunction
+    endfunc
 
-    function __operator_minus(o)
+    func __operator_minus(o)
         return new Pair(first - o.first, second - o.second);
-    endfunction
+    endfunc
 endclass

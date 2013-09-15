@@ -2,13 +2,13 @@ class Queue
     ArrayRep, Size;
     Start, End;
 
-    function Queue()
+    func Queue()
         let Size = 0;
         let ArrayRep = map();
         let Start = let End = 0;
-    endfunction
+    endfunc
 
-    function Push(object)
+    func Push(object)
         if(Size == 0)
             let ArrayRep[Start] = object;
             let Size = Size+1;
@@ -17,9 +17,9 @@ class Queue
             let Size = Size +1;
             let End = End +1;
         endif
-    endfunction
+    endfunc
 
-    function Pop()
+    func Pop()
         if(Size == 0)
             raise "Cannot Pop(), Queue is empty!";
         elif(Size == 1)
@@ -32,17 +32,17 @@ class Queue
             let Start = Start+1;
             return ArrayRep[Start-1];
         endif
-    endfunction
+    endfunc
 
-    function Empty()
+    func Empty()
         return Size == 0;
-    endfunction
+    endfunc
 
-    function Front()
+    func Front()
         if(Size == 0)
             raise "Cannot get Front(), Queue is empty!";
         else
             return ArrayRep[Start];
         endif
-    endfunction
+    endfunc
 endclass
