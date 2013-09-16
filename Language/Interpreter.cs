@@ -2392,7 +2392,8 @@ namespace Lang.language
                 }
                 else
                 {
-
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Static functions not implemented yet!");
                 }
             }
             throw new InterpreterException("Something not handled here");
