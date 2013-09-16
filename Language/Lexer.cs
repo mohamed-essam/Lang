@@ -100,6 +100,9 @@ namespace Lang.language
             reservedKeywords["endfunc"] = TokenType.ENDFUNCTION;
             reservedKeywords["class"] = TokenType.CLASS;
             reservedKeywords["endclass"] = TokenType.ENDCLASS;
+            reservedKeywords["private"] = TokenType.MODIFIER;
+            reservedKeywords["public"] = TokenType.MODIFIER;
+            reservedKeywords["readonly"] = TokenType.MODIFIER;
         }
 
         /// <summary>

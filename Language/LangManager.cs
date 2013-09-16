@@ -184,7 +184,8 @@ namespace Lang.language
         EXTENDS,
         BREAK,
         CONTINUE,
-        NOT
+        NOT,
+        MODIFIER
     }
 
     public class Token

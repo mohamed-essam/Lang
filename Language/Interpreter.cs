@@ -137,7 +137,7 @@ namespace Lang.language
                 }
                 for (int i = arr.Count - 1; i >= 0; i--)
                 {
-                    foreach (string dicc in ((ClassStatement)arr[i]).vars)
+                    foreach (ClassMember dicc in ((ClassStatement)arr[i]).vars)
                     {
                         cs.vars.Add(dicc);
                     }
@@ -2264,9 +2264,23 @@ namespace Lang.language
             BinaryOperator op = (BinaryOperator)node;
             Node _left = op.left;
             LangObject _left_ret = null;
+            bool isClass = false;
+            ClassStatement stat = null;
             if (_left.nodeType == NodeType.BRACKETS)
             {
                 _left_ret = BracketsOperatorInterpret(_left);
+            }
+            else if (_left.nodeType == NodeType.ID)
+            {
+                if (((Hashtable)table[level]).ContainsKey(((ID)_left).name))
+                {
+                    _left_ret = DotInterpret(_left, null);
+                }
+                else if (classes.ContainsKey(((ID)_left).name))
+                {
+                    stat = (ClassStatement)classes[((ID)_left).name];
+                    isClass = true;
+                }
             }
             else
             {
@@ -2280,18 +2294,43 @@ namespace Lang.language
             Node _right = op.right;
             if (_right.nodeType == NodeType.ID)
             {
-                LangClass _left_ret_class = (LangClass)_left_ret;
-                ID _right_ID = (ID)_right;
-                if (_val != null)
+                if (!isClass)
                 {
-                    return (LangObject)((_left_ret_class.vars[_right_ID.name]) = _val);
+                    LangClass _left_ret_class = (LangClass)_left_ret;
+                    ID _right_ID = (ID)_right;
+                    if (!_left_ret_class.vars.Contains(_right_ID.name))
+                    {
+                        langManager.lastErrorToken = node.token;
+                        throw new InterpreterException("Class '" + _left_ret_class.name + "' doesn't contain the member '" + _right_ID.name + "'");
+                    }
+                    if (_val != null)
+                    {
+                        foreach (string mod in ((ArrayList)_left_ret_class.permissions[_right_ID.name]))
+                        {
+                            if (mod == "private" || mod == "readonly")
+                            {
+                                if (_left.token.lexeme != "this")
+                                {
+                                    langManager.lastErrorToken = node.token;
+                                    throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be changed because it's '" + mod + "'");
+                                }
+                            }
+                        }
+                        return (LangObject)((_left_ret_class.vars[_right_ID.name]) = _val);
+                    }
+                    if (_left.token.lexeme != "this")
+                    {
+                        foreach (string mod in ((ArrayList)_left_ret_class.permissions[_right_ID.name]))
+                        {
+                            if (mod == "private")
+                            {
+                                langManager.lastErrorToken = node.token;
+                                throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be accessed because it's '" + mod + "'");
+                            }
+                        }
+                    }
+                    return (LangObject)(_left_ret_class.vars[_right_ID.name]);
                 }
-                if (!_left_ret_class.vars.Contains(_right_ID.name))
-                {
-                    langManager.lastErrorToken = node.token;
-                    throw new InterpreterException("Class '" + _left_ret_class.name + "' doesn't contain the member '" + _right_ID.name + "'");
-                }
-                return (LangObject)(_left_ret_class.vars[_right_ID.name]);
             }
             if (_right.nodeType == NodeType.STATEMENT)
             {
@@ -2575,7 +2614,14 @@ namespace Lang.language
             BindStatement _node = (BindStatement)node;
             LangObject val = decider(_node.expr);
             if (_node.Id.nodeType == NodeType.ID)
+            {
+                if (((ID)_node.Id).name == "this")
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Cannot write to reserved keyword 'this'");
+                }
                 ((Hashtable)table[level])[((ID)_node.Id).name] = val.Clone();
+            }
             else
             {
                 if (_node.Id.nodeType == NodeType.BRACKETS)

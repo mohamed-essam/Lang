@@ -166,6 +166,7 @@
             this.Finder.Name = "Finder";
             this.Finder.Size = new System.Drawing.Size(182, 49);
             this.Finder.TabIndex = 12;
+            this.Finder.Visible = false;
             // 
             // LineNumberer
             // 

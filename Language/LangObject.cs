@@ -371,6 +371,7 @@ namespace Lang.language
     public class LangClass : LangObject
     {
         public Hashtable vars, methods;
+        internal Hashtable permissions;
         public ArrayList constructors;
         public string name;
 
@@ -378,9 +379,11 @@ namespace Lang.language
             : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
-            foreach (string varia in _vars)
+            permissions = new Hashtable();
+            foreach (ClassMember varia in _vars)
             {
-                vars[varia] = new LangNumber(0, handler);
+                vars[varia.name] = new LangNumber(0, handler);
+                permissions[varia.name] = varia.Modifiers;
             }
             methods = new Hashtable();
             foreach (FunctionStatement func in _methods)
@@ -391,10 +394,11 @@ namespace Lang.language
             name = _name;
         }
 
-        public LangClass(Hashtable _vars, Hashtable _methods, ArrayList _constructor, string _name, Interpreter _inter)
+        public LangClass(Hashtable _vars, Hashtable _perms, Hashtable _methods, ArrayList _constructor, string _name, Interpreter _inter)
             : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
+            permissions = _perms;
             foreach (DictionaryEntry varia in _vars)
             {
                 vars[varia.Key] = ((LangObject)varia.Value).Clone();
@@ -412,9 +416,11 @@ namespace Lang.language
             : base(ObjectType.CLASS, _inter)
         {
             vars = new Hashtable();
-            foreach (string str in _stat.vars)
+            permissions = new Hashtable();
+            foreach (ClassMember str in _stat.vars)
             {
-                vars[str] = new LangNumber(0, handler);
+                vars[str.name] = new LangNumber(0, handler);
+                permissions[str.name] = str.Modifiers;
             }
             methods = _stat.methods;
             constructors = _stat.constructors;
@@ -428,7 +434,7 @@ namespace Lang.language
             {
                 _vars[dic.Key] = ((LangObject)dic.Value).Clone();
             }
-            return new LangClass(_vars, methods, constructors, name, handler);
+            return new LangClass(_vars, permissions, methods, constructors, name, handler);
         }
 
         public override LangObject Plus(LangObject other)

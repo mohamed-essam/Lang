@@ -147,6 +147,18 @@ namespace Lang.language
 
     
     }
+
+    public class ClassMember
+    {
+        internal ArrayList Modifiers;
+        internal string name;
+
+        public ClassMember(ArrayList _mods, string _name)
+        {
+            Modifiers = _mods;
+            name = _name;
+        }
+    }
     #endregion
 
     public class BinaryOperator : Node
@@ -1348,15 +1360,37 @@ namespace Lang.language
             ArrayList constructors = new ArrayList();
             while (true)
             {
-                if (isNext(TokenType.ID))
+                if (isNext(TokenType.MODIFIER))
                 {
-                    vars.Add(lookAhead.lexeme);
+                    ArrayList mods = new ArrayList();
+                    while (isNext(TokenType.MODIFIER))
+                    {
+                        mods.Add(lookAhead.lexeme);
+                        move();
+                    }
+
+                    match(TokenType.ID);
+                    vars.Add(new ClassMember(mods, lookAhead.lexeme));
                     move();
                     while (isNext(TokenType.COMMA))
                     {
                         move();
                         match(TokenType.ID);
-                        vars.Add(lookAhead.lexeme);
+                        vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                        move();
+                    }
+                    match(TokenType.SEMICOLON);
+                    move();
+                }
+                else if (isNext(TokenType.ID))
+                {
+                    vars.Add(new ClassMember(new ArrayList(), lookAhead.lexeme));
+                    move();
+                    while (isNext(TokenType.COMMA))
+                    {
+                        move();
+                        match(TokenType.ID);
+                        vars.Add(new ClassMember(new ArrayList(), lookAhead.lexeme));
                         move();
                     }
                     match(TokenType.SEMICOLON);
