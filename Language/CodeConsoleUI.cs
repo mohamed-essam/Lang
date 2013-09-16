@@ -164,6 +164,17 @@ namespace Lang.Language
                 node.Text = objcls.name;
                 foreach (DictionaryEntry it in objcls.vars)
                 {
+                    bool cont = false;
+                    foreach (string mod in ((ArrayList)objcls.permissions[it.Key]))
+                    {
+                        if (mod == "private")
+                        {
+                            cont = true;
+                            break;
+                        }
+                    }
+                    if (cont)
+                        continue;
                     LangObject obj2 = ((LangObject)it.Value);
                     TreeNode child = new TreeNode((string)it.Key);
                     TreeNode child2 = new TreeNode();

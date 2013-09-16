@@ -234,17 +234,22 @@ namespace Lang.language
             }
             catch (LangException e)
             {
-                if (consoleUI == null)
+                if (keepWorking)
                 {
-                    throw;
+                    if (consoleUI == null)
+                    {
+                        throw;
+                    }
+                    consoleUI.Invoke((MethodInvoker)delegate()
+                    {
+                        consoleUI.HandleExceptions(e, langManager.lastErrorToken, StackTrace);
+                    });
+                    gui.Invoke((MethodInvoker)delegate()
+                    {
+                        gui.Close();
+                    });
+                    return val;
                 }
-                consoleUI.Invoke((MethodInvoker)delegate() {
-                    consoleUI.HandleExceptions(e, langManager.lastErrorToken, StackTrace);
-                });
-                gui.Invoke((MethodInvoker)delegate(){
-                    gui.Close();
-                });
-                return val;
             }
             if (consoleUI != null)
             {
@@ -1894,7 +1899,7 @@ namespace Lang.language
                 }
             }
             FunctionCallStatement stat = new FunctionCallStatement(EventName, newParameters, new Token("", TokenType.AND, -1, "", 0, 0));
-            RunClassFunction((ArrayList)handler.methods[EventName], stat, handler, newParameters);
+            RunClassFunction((ArrayList)handler.methods[EventName], stat, handler, false, newParameters);
         }
         #endregion
 
@@ -2388,7 +2393,7 @@ namespace Lang.language
                         langManager.lastErrorToken = _right.token;
                         throw new InterpreterException("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
                     }
-                    return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
+                    return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret , _left.token.lexeme == "this");
                 }
                 else
                 {
@@ -2504,7 +2509,7 @@ namespace Lang.language
             }
             return obj;
         }
-        LangObject RunClassFunction(ArrayList _functions, FunctionCallStatement _call, LangClass _class, ArrayList alreadyCalcd = null)
+        LangObject RunClassFunction(ArrayList _functions, FunctionCallStatement _call, LangClass _class, bool isAdmin, ArrayList alreadyCalcd = null)
         {
             if (!keepWorking)
                 return new LangState("stop", this);
@@ -2521,7 +2526,7 @@ namespace Lang.language
             ArrayList funcs = _functions;
             for (int i = 0; i < funcs.Count; i++)
             {
-                FunctionStatement st = (FunctionStatement)(funcs)[i];
+                FunctionStatement st = ((ClassMethod)(funcs[i])).statement;
                 if (st.parameters.Count != _call.parameters.Count)
                 {
                     continue;
@@ -2564,12 +2569,24 @@ namespace Lang.language
                     }
                     if (works)
                     {
+                        if (!isAdmin)
+                        {
+                            foreach (string mod in ((ClassMethod)(funcs[i])).Modifiers)
+                            {
+                                if (mod == "private")
+                                {
+                                    langManager.lastErrorToken = _call.token;
+                                    throw new InterpreterException("Line " + _call.token.line + ": " + "Function '" + _call.name + "' is Inaccessible due to it's protection level");
+                                }
+                            }
+                        }
                         _function = st;
                         break;
                     }
                 }
             }
             #endregion
+
             if (_function == null)
             {
                 langManager.lastErrorToken = _call.token;

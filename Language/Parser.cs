@@ -159,6 +159,18 @@ namespace Lang.language
             name = _name;
         }
     }
+
+    public class ClassMethod
+    {
+        internal ArrayList Modifiers;
+        internal FunctionStatement statement;
+
+        public ClassMethod(ArrayList _mods, FunctionStatement _stat)
+        {
+            Modifiers = _mods;
+            statement = _stat;
+        }
+    }
     #endregion
 
     public class BinaryOperator : Node
@@ -1380,20 +1392,8 @@ namespace Lang.language
                         move();
                     }
 
-                    match(TokenType.ID);
-                    if (isStatic)
+                    if (isNext(TokenType.ID))
                     {
-                        staticMembers[lookAhead.lexeme] = new LangNumber(0, langManager.interpreter);
-                        staticPermissions[lookAhead.lexeme] = mods;
-                    }
-                    else
-                    {
-                        vars.Add(new ClassMember(mods, lookAhead.lexeme));
-                    }
-                    move();
-                    while (isNext(TokenType.COMMA))
-                    {
-                        move();
                         match(TokenType.ID);
                         if (isStatic)
                         {
@@ -1405,9 +1405,41 @@ namespace Lang.language
                             vars.Add(new ClassMember(mods, lookAhead.lexeme));
                         }
                         move();
+                        while (isNext(TokenType.COMMA))
+                        {
+                            move();
+                            match(TokenType.ID);
+                            if (isStatic)
+                            {
+                                staticMembers[lookAhead.lexeme] = new LangNumber(0, langManager.interpreter);
+                                staticPermissions[lookAhead.lexeme] = mods;
+                            }
+                            else
+                            {
+                                vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                            }
+                            move();
+                        }
+                        match(TokenType.SEMICOLON);
+                        move();
                     }
-                    match(TokenType.SEMICOLON);
-                    move();
+                    else
+                    {
+                        match(TokenType.FUNCTION);
+                        FunctionStatement stat = function_stat();
+                        if (stat.name == name)
+                        {
+                            constructors.Add(stat);
+                        }
+                        else
+                        {
+                            if (!methods.ContainsKey(stat.name))
+                            {
+                                methods[stat.name] = new ArrayList();
+                            }
+                            ((ArrayList)methods[stat.name]).Add(new ClassMethod(mods, stat));
+                        }
+                    }
                 }
                 else if (isNext(TokenType.ID))
                 {
@@ -1436,7 +1468,7 @@ namespace Lang.language
                         {
                             methods[stat.name] = new ArrayList();
                         }
-                        ((ArrayList)methods[stat.name]).Add(stat);
+                        ((ArrayList)methods[stat.name]).Add(new ClassMethod(new ArrayList(),stat));
                     }
                 }
                 else
