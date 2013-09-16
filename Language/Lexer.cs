@@ -103,6 +103,7 @@ namespace Lang.language
             reservedKeywords["private"] = TokenType.MODIFIER;
             reservedKeywords["public"] = TokenType.MODIFIER;
             reservedKeywords["readonly"] = TokenType.MODIFIER;
+            reservedKeywords["static"] = TokenType.MODIFIER;
         }
 
         /// <summary>

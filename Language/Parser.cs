@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Lang.language
 {
-    internal class ParserException : LangException  
+    internal class ParserException : LangException
     {
 
         public ParserException()
@@ -27,7 +27,7 @@ namespace Lang.language
         }
     }
 
-    
+
     #region Node
     abstract public class Node : IDisposable
     {
@@ -145,7 +145,7 @@ namespace Lang.language
             val = null;
         }
 
-    
+
     }
 
     public class ClassMember
@@ -302,7 +302,7 @@ namespace Lang.language
                 {
                     if (ret[i] == '\n')
                     {
-                        ret = ret.Substring(0, i+1) + "    " + ret.Substring(i+1);
+                        ret = ret.Substring(0, i + 1) + "    " + ret.Substring(i + 1);
                         i += 4;
                     }
                 }
@@ -655,7 +655,7 @@ namespace Lang.language
         }
     }
 
-    public class IfStatement:Statement
+    public class IfStatement : Statement
     {
         public ArrayList data;
         public StatementList elseData; // nullable
@@ -865,9 +865,11 @@ namespace Lang.language
         public ArrayList vars;
         public Hashtable methods;
         public ArrayList constructors;
+        public Hashtable staticMembers;
+        public Hashtable staticPermissions;
         public ID parent;
 
-        public ClassStatement(string _name, ArrayList _vars, Hashtable _methods, ArrayList _constructors, Token _token, ID _parent)
+        public ClassStatement(string _name, ArrayList _vars, Hashtable staticMembs, Hashtable staticPerms, Hashtable _methods, ArrayList _constructors, Token _token, ID _parent)
             : base(StatementType.CLASS, _token)
         {
             name = _name;
@@ -875,6 +877,8 @@ namespace Lang.language
             methods = _methods;
             constructors = _constructors;
             parent = _parent;
+            staticMembers = staticMembs;
+            staticPermissions = staticPerms;
         }
 
         public override void Dispose()
@@ -934,7 +938,7 @@ namespace Lang.language
             {
                 if (ret[i] == '\n')
                 {
-                    ret = ret.Substring(0, i+1) + "    " + ret.Substring(i+1);
+                    ret = ret.Substring(0, i + 1) + "    " + ret.Substring(i + 1);
                     i += 4;
                 }
             }
@@ -972,9 +976,9 @@ namespace Lang.language
         public override void Dispose()
         {
             stats.Dispose();
-            if(catchID != null)
+            if (catchID != null)
                 catchID.Dispose();
-            if(catchStats != null)
+            if (catchStats != null)
                 catchStats.Dispose();
             stats = catchStats = null;
             catchID = null;
@@ -1028,7 +1032,7 @@ namespace Lang.language
             p++;
             if (p >= tokens.Count)
             {
-                lookAhead = (Token)tokens[tokens.Count-1];
+                lookAhead = (Token)tokens[tokens.Count - 1];
             }
             else
             {
@@ -1063,7 +1067,7 @@ namespace Lang.language
                 {
                     langManager.lastLiveErrorToken = lookAhead;
                 }
-                throw new ParserException("Line "+lookAhead.line+": "+"Syntax error: expected "+type+" instead of "+lookAhead.type);
+                throw new ParserException("Line " + lookAhead.line + ": " + "Syntax error: expected " + type + " instead of " + lookAhead.type);
             }
         }
 
@@ -1358,25 +1362,48 @@ namespace Lang.language
             ArrayList vars = new ArrayList();
             Hashtable methods = new Hashtable();
             ArrayList constructors = new ArrayList();
+            Hashtable staticMembers = new Hashtable();
+            Hashtable staticPermissions = new Hashtable();
             while (true)
             {
                 if (isNext(TokenType.MODIFIER))
                 {
                     ArrayList mods = new ArrayList();
+                    bool isStatic = false;
                     while (isNext(TokenType.MODIFIER))
                     {
+                        if (lookAhead.lexeme == "static")
+                        {
+                            isStatic = true;
+                        }
                         mods.Add(lookAhead.lexeme);
                         move();
                     }
 
                     match(TokenType.ID);
-                    vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                    if (isStatic)
+                    {
+                        staticMembers[lookAhead.lexeme] = new LangNumber(0, langManager.interpreter);
+                        staticPermissions[lookAhead.lexeme] = mods;
+                    }
+                    else
+                    {
+                        vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                    }
                     move();
                     while (isNext(TokenType.COMMA))
                     {
                         move();
                         match(TokenType.ID);
-                        vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                        if (isStatic)
+                        {
+                            staticMembers[lookAhead.lexeme] = new LangNumber(0, langManager.interpreter);
+                            staticPermissions[lookAhead.lexeme] = mods;
+                        }
+                        else
+                        {
+                            vars.Add(new ClassMember(mods, lookAhead.lexeme));
+                        }
                         move();
                     }
                     match(TokenType.SEMICOLON);
@@ -1419,7 +1446,7 @@ namespace Lang.language
             }
             match(TokenType.ENDCLASS);
             move();
-            return new ClassStatement(name, vars, methods, constructors, classToken, parent);
+            return new ClassStatement(name, vars, staticMembers, staticPermissions, methods, constructors, classToken, parent);
         }
         #endregion
 

@@ -63,6 +63,7 @@ namespace Lang.language
         internal CodeConsoleUI consoleUI;
         internal CodeGUI gui;
         private Hashtable EventHandlers;
+        private LangClass lastCalledClass;
 
         /// <summary>
         /// Creates a new Interpeter object
@@ -118,7 +119,7 @@ namespace Lang.language
             Hashtable newClasses = new Hashtable();
             foreach (DictionaryEntry dic in classes)
             {
-                ClassStatement cs = new ClassStatement(((ClassStatement)dic.Value).name, new ArrayList(), new Hashtable(), new ArrayList(), ((ClassStatement)dic.Value).token, ((ClassStatement)dic.Value).parent);
+                ClassStatement cs = new ClassStatement(((ClassStatement)dic.Value).name, new ArrayList(), new Hashtable(), new Hashtable(), new Hashtable(), new ArrayList(), ((ClassStatement)dic.Value).token, ((ClassStatement)dic.Value).parent);
                 if (cs.parent == null)
                 {
                     newClasses[dic.Key] = dic.Value;
@@ -2286,18 +2287,19 @@ namespace Lang.language
             {
                 _left_ret = DotInterpret(_left, null);
             }
-            if (_left_ret.objectType != ObjectType.CLASS)
-            {
-                langManager.lastErrorToken = node.token;
-                throw new InterpreterException("Line " + node.token.line + ": Expected class on left handside");
-            }
+            if(!isClass)
+                if (_left_ret.objectType != ObjectType.CLASS)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": Expected class on left handside");
+                }
             Node _right = op.right;
             if (_right.nodeType == NodeType.ID)
             {
+                    ID _right_ID = (ID)_right;
                 if (!isClass)
                 {
                     LangClass _left_ret_class = (LangClass)_left_ret;
-                    ID _right_ID = (ID)_right;
                     if (!_left_ret_class.vars.Contains(_right_ID.name))
                     {
                         langManager.lastErrorToken = node.token;
@@ -2331,20 +2333,68 @@ namespace Lang.language
                     }
                     return (LangObject)(_left_ret_class.vars[_right_ID.name]);
                 }
+                else
+                {
+                    if (!stat.staticMembers.ContainsKey(_right_ID.name))
+                    {
+                        langManager.lastErrorToken = node.token;
+                        throw new Exception("Class '" + stat.name + "' doesn't contain the static member '" + _right_ID.name + "'!");
+                    }
+                    if (_val != null)
+                    {
+                        if (lastCalledClass != null && lastCalledClass.name == stat.name)
+                        {
+                            return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
+                        }
+                        else
+                        {
+                            foreach (string mod in ((ArrayList)stat.staticPermissions[_right_ID.name]))
+                            {
+                                if (mod == "readonly" || mod == "private")
+                                {
+                                    langManager.lastErrorToken = node.token;
+                                    throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be accessed because it's '" + mod + "'");
+                                }
+                            }
+                            return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
+                        }
+                    }
+                    if (lastCalledClass != null && lastCalledClass.name == stat.name)
+                    {
+                        return (LangObject)stat.staticMembers[_right_ID.name];
+                    }
+                    else
+                    {
+                        foreach (string mod in ((ArrayList)stat.staticPermissions[_right_ID.name]))
+                        {
+                            if (mod == "private")
+                            {
+                                langManager.lastErrorToken = node.token;
+                                throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be accessed because it's '" + mod + "'");
+                            }
+                        }
+                        return (LangObject)stat.staticMembers[_right_ID.name];
+                    }
+                }
             }
             if (_right.nodeType == NodeType.STATEMENT)
             {
                 FunctionCallStatement _right_stat = (FunctionCallStatement)_right;
-                LangClass _left_ret_class = (LangClass)_left_ret;
-                if (!(_left_ret_class.methods.ContainsKey(_right_stat.name)))
+                if (!isClass)
                 {
-                    langManager.lastErrorToken = _right.token;
-                    throw new InterpreterException("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
+                    LangClass _left_ret_class = (LangClass)_left_ret;
+                    if (!(_left_ret_class.methods.ContainsKey(_right_stat.name)))
+                    {
+                        langManager.lastErrorToken = _right.token;
+                        throw new InterpreterException("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
+                    }
+                    return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
                 }
-                return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret);
+                else
+                {
+
+                }
             }
-
-
             throw new InterpreterException("Something not handled here");
         }
         LangObject DotOperatorInterpret(Node node)
@@ -2421,7 +2471,10 @@ namespace Lang.language
             ((Hashtable)table[level])["this"] = _class;
             StackTrace.Add(new StackTraceEntry(_call.token.file, lastFunctionCalled, _call.token.line));
             lastFunctionCalled = _call.name;
+            LangClass last = lastCalledClass;
+            lastCalledClass = _class;
             LangObject obj = statListDecider(_function.stats);
+            lastCalledClass = last;
             lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
             StackTrace.RemoveAt(StackTrace.Count - 1);
             level--;
@@ -2538,7 +2591,10 @@ namespace Lang.language
             ((Hashtable)table[level])["this"] = _class;
             StackTrace.Add(new StackTraceEntry(_call.token.file, lastFunctionCalled, _call.token.line));
             lastFunctionCalled = _call.name;
+            LangClass last = lastCalledClass;
+            lastCalledClass = _class;
             LangObject obj = statListDecider(_function.stats);
+            lastCalledClass = last;
             lastFunctionCalled = ((StackTraceEntry)StackTrace[StackTrace.Count - 1]).FunctionName;
             StackTrace.RemoveAt(StackTrace.Count - 1);
             level--;
