@@ -158,6 +158,16 @@ namespace Lang.language
             Modifiers = _mods;
             name = _name;
         }
+
+        public override string ToString()
+        {
+            string mods = "";
+            foreach (string mod in Modifiers)
+            {
+                mods += mod + " ";
+            }
+            return mods + name + ";";
+        }
     }
 
     public class ClassMethod
@@ -169,6 +179,16 @@ namespace Lang.language
         {
             Modifiers = _mods;
             statement = _stat;
+        }
+
+        public override string ToString()
+        {
+            string mods = "";
+            foreach (string mod in Modifiers)
+            {
+                mods += mod + " ";
+            }
+            return mods + statement.ToString();
         }
     }
     #endregion
@@ -917,18 +937,14 @@ namespace Lang.language
         public override string ToString()
         {
             string vrs = "";
-            foreach (string vr in vars)
+            foreach (ClassMember vr in vars)
             {
-                if (vrs.Length > 0)
-                    vrs += ",";
-                vrs += vr;
+                vrs += vr.ToString() + "\n";
             }
             if (vrs.Length > 0)
             {
                 vrs = "    " + vrs;
-                vrs += ";";
             }
-
             string consts = "";
             foreach (FunctionStatement stat in constructors)
             {
@@ -940,7 +956,7 @@ namespace Lang.language
             {
                 mthds += "\n\n";
                 ArrayList funcs = (ArrayList)dic.Value;
-                foreach (FunctionStatement stat in funcs)
+                foreach (ClassMethod stat in funcs)
                 {
                     mthds += stat.ToString();
                 }

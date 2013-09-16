@@ -11,8 +11,9 @@ class __SET_Node
 endclass
 
 class Set
-    root , Size;
-    ArrayRep;
+    private root;
+    readonly Size;
+    private ArrayRep;
 
     func Set ()
         let root = new __SET_Node();
@@ -20,7 +21,7 @@ class Set
         let Size = 0;
     endfunc
 
-    func __LRsetup(node)
+    private func __LRsetup(node)
         let node._left = new __SET_Node();
         let node._left.exists = 0;
         let node._right = new __SET_Node();
@@ -78,7 +79,7 @@ class Set
         endif
     endfunc
 
-    func _remove(CurNode)
+    private func _remove(CurNode)
         if(CurNode._left.exists == 0)
             if(CurNode._right.exists == 0)
                 let CurNode.exists = 0;
@@ -101,7 +102,7 @@ class Set
         endif
     endfunc
     
-    func __traverse (node)
+    private func __traverse (node)
         if (node ._left .exists)
             this.__traverse (node ._left);
         endif

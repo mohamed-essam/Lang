@@ -1,6 +1,7 @@
 class Queue
-    ArrayRep, Size;
-    Start, End;
+    private ArrayRep;
+    readonly Size;
+    private Start, End;
 
     func Queue()
         let Size = 0;

@@ -15,8 +15,8 @@ class Pixel
 endclass
 
 class Image
-    Bitmap;
-    OriginalPath;
+    readonly Bitmap;
+    private OriginalPath;
     
     func Image(path as string)
         let this.Bitmap = getImage(path);
@@ -256,7 +256,7 @@ class Image
         saveImage(this.Bitmap, path);
     endfunc
     
-    func __CheckCoords(X, Y)
+    private func __CheckCoords(X, Y)
         if(X < 0 | X >= this.GetWidth() | Y < 0 | Y > this.GetHeight())
             raise "Coordinates out of bounds!";
         endif
