@@ -183,7 +183,8 @@ namespace Lang.language
         ENDCATCH,
         EXTENDS,
         BREAK,
-        CONTINUE
+        CONTINUE,
+        NOT
     }
 
     public class Token

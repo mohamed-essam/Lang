@@ -1863,6 +1863,8 @@ namespace Lang.language
                     return statListDecider((StatementList)node);
                 case NodeType.PARAS:
                     return decider(((UnaryOperator)node).child);
+                case NodeType.NOT:
+                    return notInterpret(node);
             }
             return new LangNumber(0, this);
         }
@@ -1977,6 +1979,17 @@ namespace Lang.language
                 langManager.lastErrorToken = node.token;
                 throw;
             }
+        }
+        LangObject notInterpret(Node node)
+        {
+            UnaryOperator op = (UnaryOperator)node;
+            LangObject child = decider(op.child);
+            if (child.objectType != ObjectType.NUMBER)
+            {
+                throw new InterpreterException("Line " + op.token.line + ": " + "Cannot apply not operator to type '" + Convert.ToString(child.objectType) + "'");
+            }
+            LangNumber val = (LangNumber)child;
+            return new LangNumber(Convert.ToDouble(!Convert.ToBoolean(val.numberValue)), this);
         }
         #endregion
 

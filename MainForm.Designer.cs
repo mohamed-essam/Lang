@@ -49,18 +49,22 @@
             // 
             // RunButton
             // 
+            this.RunButton.BackColor = System.Drawing.SystemColors.Control;
+            this.RunButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.RunButton.Location = new System.Drawing.Point(311, 31);
             this.RunButton.Name = "RunButton";
             this.RunButton.Size = new System.Drawing.Size(75, 23);
             this.RunButton.TabIndex = 0;
             this.RunButton.Text = "Run";
-            this.RunButton.UseVisualStyleBackColor = true;
+            this.RunButton.UseVisualStyleBackColor = false;
             this.RunButton.Click += new System.EventHandler(this.RunButton_Click);
             this.RunButton.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             // 
             // codeRTB
             // 
             this.codeRTB.AcceptsTab = true;
+            this.codeRTB.BackColor = System.Drawing.SystemColors.Window;
+            this.codeRTB.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.codeRTB.DetectUrls = false;
             this.codeRTB.Location = new System.Drawing.Point(27, 60);
             this.codeRTB.Name = "codeRTB";
@@ -82,6 +86,7 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.BackColor = System.Drawing.SystemColors.Control;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -138,6 +143,7 @@
             // 
             // statusStrip1
             // 
+            this.statusStrip1.BackColor = System.Drawing.SystemColors.Control;
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ErrorsShower});
             this.statusStrip1.Location = new System.Drawing.Point(0, 447);
@@ -156,11 +162,10 @@
             // 
             this.Finder.BackColor = System.Drawing.SystemColors.ControlDark;
             this.Finder.DockTo = this.codeRTB;
-            this.Finder.Location = new System.Drawing.Point(234, 64);
+            this.Finder.Location = new System.Drawing.Point(201, 63);
             this.Finder.Name = "Finder";
-            this.Finder.Size = new System.Drawing.Size(147, 26);
+            this.Finder.Size = new System.Drawing.Size(182, 49);
             this.Finder.TabIndex = 12;
-            this.Finder.Visible = false;
             // 
             // LineNumberer
             // 
@@ -203,6 +208,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(394, 469);
             this.Controls.Add(this.Finder);
             this.Controls.Add(this.LineNumberer);

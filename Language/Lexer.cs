@@ -122,6 +122,7 @@ namespace Lang.language
             reservedSpecialCharacters["<"] = TokenType.SMALLER;
             reservedSpecialCharacters[">"] = TokenType.GREATER;
             reservedSpecialCharacters["="] = TokenType.EQUAL;
+            reservedSpecialCharacters["!"] = TokenType.NOT;
             reservedSpecialCharacters[">="] = TokenType.GREATER_EQUAL;
             reservedSpecialCharacters["<="] = TokenType.SMALLER_EQUAL;
             reservedSpecialCharacters["!="] = TokenType.NOT_EQUAL;

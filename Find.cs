@@ -18,6 +18,8 @@ namespace Lang
             InitializeComponent();
             lastFindPos = -1;
             lastSearchQuery = "";
+            this.Width = 182;
+            this.Height = 49;
         }
 
         private void Query_TextChanged(object sender, EventArgs e)
@@ -51,10 +53,9 @@ namespace Lang
             }
         }
 
-        private void PrevButton_Click(object sender, EventArgs e)
+        private void Prev()
         {
-            string b4 = DockTo.Text.Substring(0, DockTo.SelectionStart);
-            int pos = b4.LastIndexOf(Query.Text);
+            int pos = DockTo.Text.LastIndexOf(Query.Text, DockTo.SelectionStart);
             if (pos == -1)
             {
                 pos = DockTo.Text.LastIndexOf(Query.Text);
@@ -76,14 +77,21 @@ namespace Lang
             lastSearchQuery = Query.Text;
         }
 
-        private void NextButton_Click(object sender, EventArgs e)
+        private void PrevButton_Click(object sender, EventArgs e)
         {
-            int pos = DockTo.Text.Substring(DockTo.SelectionStart + DockTo.SelectionLength).IndexOf(Query.Text);
+            Prev();
+        }
+
+        private void Next()
+        {
+            int pos = DockTo.Text.IndexOf(Query.Text, DockTo.SelectionStart + DockTo.SelectionLength);
             if (pos == -1)
             {
                 pos = DockTo.Text.IndexOf(Query.Text);
                 if (pos == -1)
                 {
+                    Query.ForeColor = Color.Red;
+                    DockTo.SelectionColor = SystemColors.WindowText;
                     return;
                 }
             }
@@ -104,6 +112,11 @@ namespace Lang
             lastSearchQuery = Query.Text;
         }
 
+        private void NextButton_Click(object sender, EventArgs e)
+        {
+            Next();
+        }
+
         private void Exit_Click(object sender, EventArgs e)
         {
             if (lastFindPos != -1)
@@ -121,5 +134,30 @@ namespace Lang
         }
 
         public RichTextBox DockTo { get; set; }
+
+        private void ReplaceButton_Click(object sender, EventArgs e)
+        {
+            if (lastFindPos != -1 && lastFindPos == DockTo.SelectionStart && lastSearchQuery.Length == DockTo.SelectionLength && DockTo.SelectedText == lastSearchQuery)
+            {
+                DockTo.SelectionColor = SystemColors.WindowText;
+                DockTo.SelectedText = Replace.Text;
+                Next();
+            }
+            else
+            {
+                Next();
+                DockTo.SelectedText = Replace.Text;
+            }
+        }
+
+        private void Find_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Query_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
     }
 }

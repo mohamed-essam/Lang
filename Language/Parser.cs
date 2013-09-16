@@ -60,7 +60,8 @@ namespace Lang.language
         DIV_INT,
         MOD,
         DOT,
-        PARAS
+        PARAS,
+        NOT
     }
     #endregion
 
@@ -1771,7 +1772,14 @@ namespace Lang.language
 
         Node factor(bool MustFind = true)
         {
-            if (isNext(TokenType.MINUS))
+            if (isNext(TokenType.NOT))
+            {
+                Token lookedAhead = lookAhead;
+                move();
+                Node node = new UnaryOperator(NodeType.NOT, factor(), lookedAhead);
+                return node;
+            }
+            else if (isNext(TokenType.MINUS))
             {
                 Token lookedAhead = lookAhead;
                 move();
