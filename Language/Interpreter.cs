@@ -1655,6 +1655,51 @@ namespace Lang.language
                 return new LangNumber(0, this);
             }
             #endregion
+            #region clearCanvas
+            else if (stat.name == "clearCanvas")
+            {
+                checkParameterNumber("clearCanvas", 3, stat);
+                LangObject _R, _G, _B;
+                _R = decider((Node)stat.parameters[3]);
+                _G = decider((Node)stat.parameters[4]);
+                _B = decider((Node)stat.parameters[5]);
+                #region TypeConfirming
+                if (_R.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'number', '" + Convert.ToString(_R.objectType) + "' Found");
+                }
+                if (_G.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'number', '" + Convert.ToString(_G.objectType) + "' Found");
+                }
+                if (_B.objectType != ObjectType.NUMBER)
+                {
+                    langManager.lastErrorToken = stat.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 3 to be 'number', '" + Convert.ToString(_B.objectType) + "' Found");
+                }
+                #endregion
+                LangNumber R = (LangNumber)_R,
+                           G = (LangNumber)_G,
+                           B = (LangNumber)_B;
+                gui.Invoke((MethodInvoker)delegate()
+                {
+                    using (Graphics graphics = Graphics.FromImage(gui.Canvas.Image))
+                    {
+                        graphics.Clear(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
+                    }
+                });
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #region getCanvasImage
+            else if (stat.name == "getCanvasImage")
+            {
+                checkParameterNumber("getCanvasImage", 0, stat);
+                return new LangImage(new Bitmap(gui.Canvas.Image), this);
+            }
+            #endregion
             #endregion
             #region Events
             #region registerHandler
@@ -1766,6 +1811,7 @@ namespace Lang.language
                 return new LangString(Directory.GetCurrentDirectory(), this);
             }
             #endregion
+
             #endregion
             #region custom functions
             else

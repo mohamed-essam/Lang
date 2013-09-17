@@ -61,6 +61,7 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox Canvas;
+        internal System.Windows.Forms.PictureBox Canvas;
+
     }
 }
