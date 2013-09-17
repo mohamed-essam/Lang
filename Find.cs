@@ -18,8 +18,8 @@ namespace Lang
             InitializeComponent();
             lastFindPos = -1;
             lastSearchQuery = "";
-            this.Width = 182;
-            this.Height = 49;
+            this.Width = 197;
+            this.Height = 27;
         }
 
         private void Query_TextChanged(object sender, EventArgs e)
@@ -152,12 +152,28 @@ namespace Lang
 
         private void Find_Load(object sender, EventArgs e)
         {
-
+            Location = new Point(DockTo.Location.X + DockTo.Width - this.Width - 5, DockTo.Location.Y + 5);
+            this.Width = 197;
+            this.Height = 27;
         }
 
         private void Query_KeyDown(object sender, KeyEventArgs e)
         {
 
+        }
+
+        private void ShowHideReplace_Click(object sender, EventArgs e)
+        {
+            if (Height == 55)
+            {
+                Height = 27;
+                ShowHideReplace.Text = "▼";
+            }
+            else
+            {
+                Height = 55;
+                ShowHideReplace.Text = "▲";
+            }
         }
     }
 }

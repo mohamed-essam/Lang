@@ -1685,6 +1685,66 @@ namespace Lang.language
                 return new LangNumber(0, this);
             }
             #endregion
+            #region removeHandler
+            else if (stat.name == "removeHandler")
+            {
+                checkParameterNumber("removeHandler", 1, stat);
+                LangObject _event;
+                _event = decider((Node)stat.parameters[0]);
+                if (_event.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
+                }
+                LangString Event = (LangString)_event;
+                if (!EventHandlers.ContainsKey(Event.stringValue))
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "No handler associated with this event!");
+                }
+                EventHandlers.Remove(Event.stringValue);
+                return new LangNumber(0, this);
+            }
+            #endregion
+            #region hasHandler
+            else if (stat.name == "hasHandler")
+            {
+                checkParameterNumber("hasHandler", 1, stat);
+                LangObject _event;
+                _event = decider((Node)stat.parameters[0]);
+                if (_event.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
+                }
+                LangString Event = (LangString)_event;
+                if (!EventHandlers.ContainsKey(Event.stringValue))
+                {
+                    return new LangNumber(0, this);
+                }
+                return new LangNumber(1, this);
+            }
+            #endregion
+            #region getHandler
+            else if (stat.name == "getHandler")
+            {
+                checkParameterNumber("getHandler", 1, stat);
+                LangObject _event;
+                _event = decider((Node)stat.parameters[0]);
+                if (_event.objectType != ObjectType.STRING)
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
+                }
+                LangString Event = (LangString)_event;
+                if (!EventHandlers.ContainsKey(Event.stringValue))
+                {
+                    langManager.lastErrorToken = node.token;
+                    throw new InterpreterException("Line " + node.token.line + ": " + "No handler associated with this event!");
+                }
+                return (LangClass)EventHandlers[Event.stringValue];
+            }
+            #endregion
             #endregion
             #region getTypeName
             else if (stat.name == "getTypeName")
