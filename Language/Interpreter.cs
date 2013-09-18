@@ -12,6 +12,7 @@ using System.Windows.Forms;
 
 namespace Lang.language
 {
+    #region AdditionalClasses
     internal class InterpreterException : LangException
     {
 
@@ -45,9 +46,11 @@ namespace Lang.language
         }
 
     }
+    #endregion
 
     public class Interpreter
     {
+        #region Members
         private StatementList root;
         internal ArrayList table;
         internal int level;
@@ -64,6 +67,7 @@ namespace Lang.language
         internal CodeGUI gui;
         private Hashtable EventHandlers;
         private LangClass lastCalledClass;
+        #endregion
 
         /// <summary>
         /// Creates a new Interpeter object
@@ -94,12 +98,13 @@ namespace Lang.language
         }
 
         // Executer
+        #region Executer
 
         /// <summary>
         /// Starts the interpreting process
         /// </summary>
         /// <returns></returns>
-        public LangObject interpret(bool createGUI = false)
+        public LangObject interpret(bool createGUI = false, CodeConsoleUI alreadyUI = null)
         {
             functions.Clear();
             classes.Clear();
@@ -216,6 +221,7 @@ namespace Lang.language
                 thread.Start(Thread.CurrentThread);
                 thread = new Thread(new ParameterizedThreadStart(runGUI));
                 gui = null;
+                thread.SetApartmentState(ApartmentState.STA);
                 thread.Start(Thread.CurrentThread);
                 Thread.Sleep(500);
                 while (consoleUI == null || !consoleUI.IsHandleCreated)
@@ -226,6 +232,10 @@ namespace Lang.language
                 {
                     Thread.Sleep(1);
                 }
+            }
+            else
+            {
+                consoleUI = alreadyUI;
             }
             LangObject val = null;
             try
@@ -251,24 +261,27 @@ namespace Lang.language
                     return val;
                 }
             }
-            if (consoleUI != null)
+            if (createGUI)
             {
-                try
+                if (consoleUI != null)
                 {
-                    consoleUI.Invoke((MethodInvoker)delegate()
+                    try
                     {
-                        consoleUI.Close();
-                    });
-                }
-                catch (InvalidOperationException) { }
-                try
-                {
-                    gui.Invoke((MethodInvoker)delegate()
+                        consoleUI.Invoke((MethodInvoker)delegate()
+                        {
+                            consoleUI.Close();
+                        });
+                    }
+                    catch (InvalidOperationException) { }
+                    try
                     {
-                        gui.Close();
-                    });
+                        gui.Invoke((MethodInvoker)delegate()
+                        {
+                            gui.Close();
+                        });
+                    }
+                    catch (InvalidOperationException) { }
                 }
-                catch (InvalidOperationException) { }
             }
             return val;
         }
@@ -1650,7 +1663,7 @@ namespace Lang.language
                 LangImage img = (LangImage)_img;
                 gui.Invoke((MethodInvoker)delegate()
                 {
-                    gui.drawImage(img.imageValue);
+                    gui.drawImage(new Bitmap(img.imageValue));
                 });
                 return new LangNumber(0, this);
             }
@@ -1697,7 +1710,20 @@ namespace Lang.language
             else if (stat.name == "getCanvasImage")
             {
                 checkParameterNumber("getCanvasImage", 0, stat);
-                return new LangImage(new Bitmap(gui.Canvas.Image), this);
+                if (gui.Canvas.Image == null)
+                {
+                    return new LangImage(new Bitmap(900, 500), this);
+                }
+                LangImage ret = null;
+                gui.Invoke((MethodInvoker)delegate()
+                {
+                    ret = new LangImage(new Bitmap(gui.Canvas.Image), this);
+                });
+                while (ret == null)
+                {
+                    Thread.Sleep(1);
+                }
+                return ret;
             }
             #endregion
             #endregion
@@ -1811,7 +1837,32 @@ namespace Lang.language
                 return new LangString(Directory.GetCurrentDirectory(), this);
             }
             #endregion
-
+            #region getMouseLocation
+            else if (stat.name == "getMouseLocation")
+            {
+                checkParameterNumber("getMouseLocation", 0, stat);
+                Point screenCoords = Cursor.Position;
+                Point guiCoords = gui.Location;
+                Point canvasCoords = gui.Canvas.Location;
+                Point canvasScreenCoords = new Point(guiCoords.X + 8, guiCoords.Y + 31);
+                Point output = new Point(screenCoords.X - canvasScreenCoords.X, screenCoords.Y - canvasScreenCoords.Y);
+                Hashtable tbl = new Hashtable();
+                tbl[0.0] = new LangNumber(output.X, this);
+                tbl[1.0] = new LangNumber(output.Y, this);
+                return new LangMap(tbl, this);
+            }
+            #endregion
+            #region getMouseButtons
+            else if (stat.name == "getMouseButtons")
+            {
+                checkParameterNumber("getMouseButtons", 0, stat);
+                Hashtable tbl = new Hashtable();
+                tbl[0.0] = new LangNumber(gui.GetLeftButtonState(), this);
+                tbl[1.0] = new LangNumber(gui.GetMiddleButtonState(), this);
+                tbl[2.0] = new LangNumber(gui.GetRightButtonState(), this);
+                return new LangMap(tbl, this);
+            }
+            #endregion
             #endregion
             #region custom functions
             else
@@ -2664,6 +2715,14 @@ namespace Lang.language
                                 break;
                             }
                         }
+                        else if (param.type == "image")
+                        {
+                            if (paramC.objectType != ObjectType.IMAGE)
+                            {
+                                works = false;
+                                break;
+                            }
+                        }
                         else
                         {
                             if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name == param.type))
@@ -2830,10 +2889,21 @@ namespace Lang.language
             {
                 output = Convert.ToString(((LangNumber)val).numberValue);
             }
-            consoleUI.Invoke((MethodInvoker)delegate()
+            if (consoleUI.IsDisposed)
             {
-                consoleUI.printLine(output);
-            });
+                return new LangState("stop", this);
+            }
+            try
+            {
+                consoleUI.Invoke((MethodInvoker)delegate()
+                {
+                    consoleUI.printLine(output);
+                });
+            }
+            catch (InvalidOperationException)
+            {
+                return new LangState("stop", this);
+            }
             foreach (PrintStatement stat in _node.extras)
             {
                 printStatInterpret(stat);
@@ -3052,7 +3122,7 @@ namespace Lang.language
                     }
                     else if (param.type == "string")
                     {
-                        if (calcd.objectType == ObjectType.CLASS)
+                        if (calcd.objectType != ObjectType.STRING)
                         {
                             works = false;
                             break;
@@ -3061,6 +3131,14 @@ namespace Lang.language
                     else if (param.type == "map")
                     {
                         if (calcd.objectType != ObjectType.MAP)
+                        {
+                            works = false;
+                            break;
+                        }
+                    }
+                    else if (param.type == "image")
+                    {
+                        if (calcd.objectType != ObjectType.IMAGE)
                         {
                             works = false;
                             break;
@@ -3205,6 +3283,7 @@ namespace Lang.language
         #endregion
         #endregion
 
+        #endregion
         #endregion
     }
 }

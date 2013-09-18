@@ -81,5 +81,20 @@ namespace Lang.Language
                 });
             }
         }
+
+        internal double GetLeftButtonState()
+        {
+            return Convert.ToDouble(MouseButtons == MouseButtons.Left || MouseButtons == (MouseButtons.Left | MouseButtons.Right) || MouseButtons == (MouseButtons.Left | MouseButtons.Middle) || MouseButtons == (MouseButtons.Left | MouseButtons.Middle | MouseButtons.Right));
+        }
+
+        internal double GetMiddleButtonState()
+        {
+            return Convert.ToDouble(MouseButtons == MouseButtons.Middle || MouseButtons == (MouseButtons.Middle | MouseButtons.Left) || MouseButtons == (MouseButtons.Middle | MouseButtons.Right) || MouseButtons == (MouseButtons.Middle | MouseButtons.Left | MouseButtons.Right));
+        }
+
+        internal double GetRightButtonState()
+        {
+            return Convert.ToDouble(MouseButtons == MouseButtons.Right || MouseButtons == (MouseButtons.Right | MouseButtons.Middle) || MouseButtons == (MouseButtons.Right | MouseButtons.Left) || MouseButtons == (MouseButtons.Right | MouseButtons.Middle | MouseButtons.Left));
+        }
     }
 }
