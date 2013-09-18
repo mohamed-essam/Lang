@@ -87,6 +87,7 @@ namespace Lang
             }
             Thread runnerThread = new Thread(new ThreadStart(langManager.run), 33554432);
             Thread.Sleep(500);
+            runnerThread.SetApartmentState(ApartmentState.STA);
             runnerThread.Start();
             LiveErrors.Enabled = false;
         }
