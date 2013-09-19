@@ -502,7 +502,7 @@ namespace Lang.language
                 {
                     throw new InterpreterException("Line " + node_.token.line + ": Function 'count' Expects parameter 1 to be 'map'");
                 }
-                return new LangNumber(((LangMap)ret).arrayValue.Count, this);
+                return new LangNumber(((LangMap)ret).arrayValue.Value.Count, this);
             }
             #endregion
             #region int
@@ -512,11 +512,11 @@ namespace Lang.language
                 LangObject expr = decider((Node)stat.parameters[0]);
                 if (expr.objectType == ObjectType.NUMBER)
                 {
-                    return new LangNumber((int)((LangNumber)expr).numberValue, this);
+                    return new LangNumber((int)((LangNumber)expr).numberValue.Value, this);
                 }
                 if (expr.objectType == ObjectType.STRING)
                 {
-                    string val = ((LangString)expr).stringValue;
+                    string val = ((LangString)expr).stringValue.Value;
                     double val_;
                     if (double.TryParse(val, out val_))
                     {
@@ -543,7 +543,7 @@ namespace Lang.language
                     case ObjectType.STRING:
                         return expr;
                     case ObjectType.NUMBER:
-                        return new LangString(Convert.ToString(((LangNumber)expr).numberValue), this);
+                        return new LangString(Convert.ToString(((LangNumber)expr).numberValue.Value), this);
                     case ObjectType.ARRAY:
                         throw new NotImplementedException();
                     case ObjectType.MAP:
@@ -570,7 +570,7 @@ namespace Lang.language
                 {
                     throw new InterpreterException("Line " + stat.token.line + ": " + "Function 'strlen' expects parameter 1 to be 'string', " + Convert.ToString(obj.objectType) + " Found");
                 }
-                return new LangNumber(((LangString)obj).stringValue.Length, this);
+                return new LangNumber(((LangString)obj).stringValue.Value.Length, this);
             }
             #endregion
             #endregion
@@ -585,7 +585,7 @@ namespace Lang.language
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param.objectType) + "' Found");
                 }
                 WebClient client = new WebClient();
-                string ret = client.DownloadString(((LangString)param).stringValue);
+                string ret = client.DownloadString(((LangString)param).stringValue.Value);
                 client.Dispose();
                 return new LangString(ret, this);
             }
@@ -606,8 +606,8 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 2 to be 'string', '" + Convert.ToString(param2.objectType) + "' Found");
                 }
-                string regexp = ((LangString)param1).stringValue;
-                string searchIn = ((LangString)param2).stringValue;
+                string regexp = ((LangString)param1).stringValue.Value;
+                string searchIn = ((LangString)param2).stringValue.Value;
                 Hashtable tbl = new Hashtable();
                 MatchCollection col = Regex.Matches(searchIn, regexp);
                 foreach (Match mt in col)
@@ -632,7 +632,7 @@ namespace Lang.language
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
                 startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 startInfo.FileName = "cmd.exe";
-                startInfo.Arguments = "/C " + ((LangString)param1).stringValue;
+                startInfo.Arguments = "/C " + ((LangString)param1).stringValue.Value;
                 process.StartInfo = startInfo;
                 return new LangNumber(Convert.ToInt32(process.Start()), this);
             }
@@ -656,8 +656,8 @@ namespace Lang.language
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
                 startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                startInfo.FileName = Directory.GetCurrentDirectory() + ((LangString)param1).stringValue;
-                startInfo.Arguments = ((LangString)param2).stringValue;
+                startInfo.FileName = Directory.GetCurrentDirectory() + ((LangString)param1).stringValue.Value;
+                startInfo.Arguments = ((LangString)param2).stringValue.Value;
                 process.StartInfo = startInfo;
                 return new LangNumber(Convert.ToInt32(process.Start()), this);
             }
@@ -673,7 +673,7 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
-                string filePath = ((LangString)param1).stringValue;
+                string filePath = ((LangString)param1).stringValue.Value;
                 if (File.Exists(filePath))
                 {
                     return new LangString(File.ReadAllText(filePath), this);
@@ -718,7 +718,7 @@ namespace Lang.language
                 }
                 try
                 {
-                    File.WriteAllText(((LangString)param1).stringValue, ((LangString)param2).stringValue);
+                    File.WriteAllText(((LangString)param1).stringValue.Value, ((LangString)param2).stringValue.Value);
                 }
                 catch (Exception)
                 {
@@ -739,7 +739,7 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
-                string filePath = ((LangString)param1).stringValue;
+                string filePath = ((LangString)param1).stringValue.Value;
                 if (!File.Exists(filePath))
                 {
                     if (!filePath.Contains(":"))
@@ -786,7 +786,7 @@ namespace Lang.language
                 }
                 try
                 {
-                    string filePath = ((LangString)param2).stringValue;
+                    string filePath = ((LangString)param2).stringValue.Value;
                     if (!filePath.Contains(":"))
                     {
                         if (filePath.StartsWith("\\"))
@@ -798,7 +798,7 @@ namespace Lang.language
                             filePath = Directory.GetCurrentDirectory() + "\\" + filePath;
                         }
                     }
-                    ((LangImage)param1).imageValue.Save(filePath);
+                    ((LangImage)param1).imageValue.Value.Save(filePath);
                 }
                 catch (Exception)
                 {
@@ -849,10 +849,10 @@ namespace Lang.language
                            R = (LangNumber)_R,
                            G = (LangNumber)_G,
                            B = (LangNumber)_B;
-                LangImage created = new LangImage(new Bitmap((int)W.numberValue, (int)H.numberValue), this);
-                using (Graphics graphics = Graphics.FromImage(created.imageValue))
+                LangImage created = new LangImage(new Bitmap((int)W.numberValue.Value, (int)H.numberValue.Value), this);
+                using (Graphics graphics = Graphics.FromImage(created.imageValue.Value))
                 {
-                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue)), new Rectangle(0, 0, (int)W.numberValue, (int)H.numberValue));
+                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value)), new Rectangle(0, 0, (int)W.numberValue.Value, (int)H.numberValue.Value));
                 }
                 return created;
             }
@@ -906,7 +906,7 @@ namespace Lang.language
                            R = (LangNumber)_R,
                            G = (LangNumber)_G,
                            B = (LangNumber)_B;
-                img.imageValue.SetPixel((int)X.numberValue, (int)Y.numberValue, Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
+                img.imageValue.Value.SetPixel((int)X.numberValue.Value, (int)Y.numberValue.Value, Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value));
                 return new LangNumber(1, this);
             }
             #endregion
@@ -937,9 +937,9 @@ namespace Lang.language
                 LangNumber X = (LangNumber)_X,
                            Y = (LangNumber)_Y;
                 Hashtable tbl = new Hashtable();
-                tbl[0.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).R, this);
-                tbl[1.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).G, this);
-                tbl[2.0] = new LangNumber(img.imageValue.GetPixel((int)X.numberValue, (int)Y.numberValue).B, this);
+                tbl[0.0] = new LangNumber(img.imageValue.Value.GetPixel((int)X.numberValue.Value, (int)Y.numberValue.Value).R, this);
+                tbl[1.0] = new LangNumber(img.imageValue.Value.GetPixel((int)X.numberValue.Value, (int)Y.numberValue.Value).G, this);
+                tbl[2.0] = new LangNumber(img.imageValue.Value.GetPixel((int)X.numberValue.Value, (int)Y.numberValue.Value).B, this);
                 return new LangMap(tbl, this);
             }
             #endregion
@@ -955,7 +955,7 @@ namespace Lang.language
                 }
                 LangImage img = (LangImage)_img;
 
-                return new LangNumber(img.imageValue.Width, this);
+                return new LangNumber(img.imageValue.Value.Width, this);
             }
             #endregion
             #region getImageHeight
@@ -970,7 +970,7 @@ namespace Lang.language
                 }
                 LangImage img = (LangImage)_img;
 
-                return new LangNumber(img.imageValue.Height, this);
+                return new LangNumber(img.imageValue.Value.Height, this);
             }
             #endregion
             #region drawImageLine
@@ -1043,10 +1043,10 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B,
                            T = (LangNumber)_T;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                    graphics.DrawLine(pen, new Point((int)X1.numberValue, (int)Y1.numberValue), new Point((int)X2.numberValue, (int)Y2.numberValue));
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value), (float)T.numberValue.Value);
+                    graphics.DrawLine(pen, new Point((int)X1.numberValue.Value, (int)Y1.numberValue.Value), new Point((int)X2.numberValue.Value, (int)Y2.numberValue.Value));
                 }
                 return new LangNumber(0, this);
             }
@@ -1121,11 +1121,11 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B,
                            T = (LangNumber)_T;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                    Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
-                    Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value), (float)T.numberValue.Value);
+                    Point start = new Point((int)X1.numberValue.Value, (int)Y1.numberValue.Value);
+                    Size size = new Size(new Point((int)(X2.numberValue.Value - X1.numberValue.Value), (int)(Y2.numberValue.Value - Y1.numberValue.Value)));
                     Rectangle rect = new Rectangle(start, size);
                     graphics.DrawRectangle(pen, rect);
                 }
@@ -1223,13 +1223,13 @@ namespace Lang.language
                            R2 = (LangNumber)_R2,
                            G2 = (LangNumber)_G2,
                            B2 = (LangNumber)_B2;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                    Point start = new Point((int)X1.numberValue, (int)Y1.numberValue);
-                    Size size = new Size(new Point((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value), (float)T.numberValue.Value);
+                    Point start = new Point((int)X1.numberValue.Value, (int)Y1.numberValue.Value);
+                    Size size = new Size(new Point((int)(X2.numberValue.Value - X1.numberValue.Value), (int)(Y2.numberValue.Value - Y1.numberValue.Value)));
                     Rectangle rect = new Rectangle(start, size);
-                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue, (int)G2.numberValue, (int)B2.numberValue)), rect);
+                    graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)R2.numberValue.Value, (int)G2.numberValue.Value, (int)B2.numberValue.Value)), rect);
                     graphics.DrawRectangle(pen, rect);
                 }
                 return new LangNumber(0, this);
@@ -1298,10 +1298,10 @@ namespace Lang.language
                            G = (LangNumber)_G,
                            B = (LangNumber)_B,
                            T = (LangNumber)_T;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                    Rectangle rect = new Rectangle(new Point((int)(X.numberValue - RAD.numberValue), (int)(Y.numberValue - RAD.numberValue)), new Size((int)RAD.numberValue * 2, (int)RAD.numberValue * 2));
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value), (float)T.numberValue.Value);
+                    Rectangle rect = new Rectangle(new Point((int)(X.numberValue.Value - RAD.numberValue.Value), (int)(Y.numberValue.Value - RAD.numberValue.Value)), new Size((int)RAD.numberValue.Value * 2, (int)RAD.numberValue.Value * 2));
                     graphics.DrawEllipse(pen, rect);
                 }
                 return new LangNumber(0, this);
@@ -1391,11 +1391,11 @@ namespace Lang.language
                            R2 = (LangNumber)_R2,
                            G2 = (LangNumber)_G2,
                            B2 = (LangNumber)_B2;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue), (float)T.numberValue);
-                    Brush brush = new SolidBrush(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
-                    Rectangle rect = new Rectangle(new Point((int)(X.numberValue - RAD.numberValue), (int)(Y.numberValue - RAD.numberValue)), new Size((int)RAD.numberValue * 2, (int)RAD.numberValue * 2));
+                    Pen pen = new Pen(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value), (float)T.numberValue.Value);
+                    Brush brush = new SolidBrush(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value));
+                    Rectangle rect = new Rectangle(new Point((int)(X.numberValue.Value - RAD.numberValue.Value), (int)(Y.numberValue.Value - RAD.numberValue.Value)), new Size((int)RAD.numberValue.Value * 2, (int)RAD.numberValue.Value * 2));
                     graphics.FillEllipse(brush, rect);
                     graphics.DrawEllipse(pen, rect);
                 }
@@ -1473,11 +1473,11 @@ namespace Lang.language
                            R = (LangNumber)_R,
                            G = (LangNumber)_G,
                            B = (LangNumber)_B;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    Font font = new Font(Font.stringValue, (float)Size.numberValue);
-                    Brush brush = new SolidBrush(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
-                    graphics.DrawString(text.stringValue, font, brush, new PointF((float)X.numberValue, (float)Y.numberValue));
+                    Font font = new Font(Font.stringValue.Value, (float)Size.numberValue.Value);
+                    Brush brush = new SolidBrush(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value));
+                    graphics.DrawString(text.stringValue.Value, font, brush, new PointF((float)X.numberValue.Value, (float)Y.numberValue.Value));
                 }
                 return new LangNumber(0, this);
             }
@@ -1517,9 +1517,9 @@ namespace Lang.language
                           img2 = (LangImage)_img2;
                 LangNumber X = (LangNumber)_X,
                            Y = (LangNumber)_Y;
-                using (Graphics graphics = Graphics.FromImage(img.imageValue))
+                using (Graphics graphics = Graphics.FromImage(img.imageValue.Value))
                 {
-                    graphics.DrawImage(img2.imageValue, new Point((int)X.numberValue, (int)Y.numberValue));
+                    graphics.DrawImage(img2.imageValue.Value, new Point((int)X.numberValue.Value, (int)Y.numberValue.Value));
                 }
                 return new LangNumber(0, this);
             }
@@ -1555,7 +1555,7 @@ namespace Lang.language
                 Bitmap fake = new Bitmap(1, 1);
                 using (Graphics graphics = Graphics.FromImage(fake))
                 {
-                    return new LangNumber(graphics.MeasureString(text.stringValue, new Font(Font.stringValue, (int)Size.numberValue)).Width, this);
+                    return new LangNumber(graphics.MeasureString(text.stringValue.Value, new Font(Font.stringValue.Value, (int)Size.numberValue.Value)).Width, this);
                 }
             }
             #endregion
@@ -1590,7 +1590,7 @@ namespace Lang.language
                 Bitmap fake = new Bitmap(1, 1);
                 using (Graphics graphics = Graphics.FromImage(fake))
                 {
-                    return new LangNumber(graphics.MeasureString(text.stringValue, new Font(Font.stringValue, (int)Size.numberValue)).Height, this);
+                    return new LangNumber(graphics.MeasureString(text.stringValue.Value, new Font(Font.stringValue.Value, (int)Size.numberValue.Value)).Height, this);
                 }
             }
             #endregion
@@ -1637,12 +1637,12 @@ namespace Lang.language
                            Y1 = (LangNumber)_Y1,
                            X2 = (LangNumber)_X2,
                            Y2 = (LangNumber)_Y2;
-                Rectangle cropRect = new Rectangle(new Point((int)X1.numberValue, (int)Y1.numberValue), new Size((int)(X2.numberValue - X1.numberValue), (int)(Y2.numberValue - Y1.numberValue)));
+                Rectangle cropRect = new Rectangle(new Point((int)X1.numberValue.Value, (int)Y1.numberValue.Value), new Size((int)(X2.numberValue.Value - X1.numberValue.Value), (int)(Y2.numberValue.Value - Y1.numberValue.Value)));
                 Bitmap newB = new Bitmap(cropRect.Width, cropRect.Height);
                 using (Graphics graphics = Graphics.FromImage(newB))
                 {
-                    graphics.DrawImage(img.imageValue, cropRect, cropRect, GraphicsUnit.Pixel);
-                    img.imageValue = newB;
+                    graphics.DrawImage(img.imageValue.Value, cropRect, cropRect, GraphicsUnit.Pixel);
+                    img.imageValue.Value = newB;
                 }
                 return new LangNumber(0, this);
             }
@@ -1663,7 +1663,7 @@ namespace Lang.language
                 LangImage img = (LangImage)_img;
                 gui.Invoke((MethodInvoker)delegate()
                 {
-                    gui.drawImage(new Bitmap(img.imageValue));
+                    gui.drawImage(new Bitmap(img.imageValue.Value));
                 });
                 return new LangNumber(0, this);
             }
@@ -1700,7 +1700,7 @@ namespace Lang.language
                 {
                     using (Graphics graphics = Graphics.FromImage(gui.Canvas.Image))
                     {
-                        graphics.Clear(Color.FromArgb((int)R.numberValue, (int)G.numberValue, (int)B.numberValue));
+                        graphics.Clear(Color.FromArgb((int)R.numberValue.Value, (int)G.numberValue.Value, (int)B.numberValue.Value));
                     }
                 });
                 return new LangNumber(0, this);
@@ -1747,12 +1747,12 @@ namespace Lang.language
                 }
                 LangString event_ = (LangString)_event;
                 LangClass handler = (LangClass)_handler;
-                if (!handler.methods.ContainsKey(event_.stringValue))
+                if (!handler.methods.Value.ContainsKey(event_.stringValue.Value))
                 {
                     langManager.lastErrorToken = node.token;
-                    throw new InterpreterException("Line " + node.token.line + ": " + "Class '" + handler.name + "' can't handler the event '" + event_.stringValue + "'!");
+                    throw new InterpreterException("Line " + node.token.line + ": " + "Class '" + handler.name + "' can't handler the event '" + event_.stringValue.Value + "'!");
                 }
-                EventHandlers[event_.stringValue] = _handler;
+                EventHandlers[event_.stringValue.Value] = _handler;
                 return new LangNumber(0, this);
             }
             #endregion
@@ -1768,12 +1768,12 @@ namespace Lang.language
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
                 }
                 LangString Event = (LangString)_event;
-                if (!EventHandlers.ContainsKey(Event.stringValue))
+                if (!EventHandlers.ContainsKey(Event.stringValue.Value))
                 {
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "No handler associated with this event!");
                 }
-                EventHandlers.Remove(Event.stringValue);
+                EventHandlers.Remove(Event.stringValue.Value);
                 return new LangNumber(0, this);
             }
             #endregion
@@ -1789,7 +1789,7 @@ namespace Lang.language
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
                 }
                 LangString Event = (LangString)_event;
-                if (!EventHandlers.ContainsKey(Event.stringValue))
+                if (!EventHandlers.ContainsKey(Event.stringValue.Value))
                 {
                     return new LangNumber(0, this);
                 }
@@ -1808,12 +1808,12 @@ namespace Lang.language
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'string', '" + Convert.ToString(_event.objectType) + "' Found");
                 }
                 LangString Event = (LangString)_event;
-                if (!EventHandlers.ContainsKey(Event.stringValue))
+                if (!EventHandlers.ContainsKey(Event.stringValue.Value))
                 {
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "No handler associated with this event!");
                 }
-                return (LangClass)EventHandlers[Event.stringValue];
+                return (LangClass)EventHandlers[Event.stringValue.Value];
             }
             #endregion
             #endregion
@@ -1827,7 +1827,7 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Function " + stat.name + " expects parameter 1 to be 'class', '" + Convert.ToString(param1.objectType) + "' Found");
                 }
-                return new LangString(((LangClass)param1).name, this);
+                return new LangString(((LangClass)param1).name.Value, this);
             }
             #endregion
             #region getCurrentDirectory
@@ -1914,7 +1914,7 @@ namespace Lang.language
                                 }
                                 else
                                 {
-                                    if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name == param.type))
+                                    if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name.Value == param.type))
                                     {
                                         works = false;
                                         break;
@@ -2056,7 +2056,7 @@ namespace Lang.language
                 }
             }
             FunctionCallStatement stat = new FunctionCallStatement(EventName, newParameters, new Token("", TokenType.AND, -1, "", 0, 0));
-            RunClassFunction((ArrayList)handler.methods[EventName], stat, handler, false, newParameters);
+            RunClassFunction((ArrayList)handler.methods.Value[EventName], stat, handler, false, newParameters);
         }
         #endregion
 
@@ -2152,7 +2152,7 @@ namespace Lang.language
                 throw new InterpreterException("Line " + op.token.line + ": " + "Cannot apply not operator to type '" + Convert.ToString(child.objectType) + "'");
             }
             LangNumber val = (LangNumber)child;
-            return new LangNumber(Convert.ToDouble(!Convert.ToBoolean(val.numberValue)), this);
+            return new LangNumber(Convert.ToDouble(!Convert.ToBoolean(val.numberValue.Value)), this);
         }
         #endregion
 
@@ -2165,7 +2165,7 @@ namespace Lang.language
             _right = decider(_node.right);
             if (_left.objectType == ObjectType.NUMBER && _right.objectType == ObjectType.NUMBER)
             {
-                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0.0 && ((LangNumber)_right).numberValue != 0.0), this);
+                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue.Value != 0.0 && ((LangNumber)_right).numberValue.Value != 0.0), this);
             }
             langManager.lastErrorToken = node.token;
             throw new InterpreterException("Invalid operation '" + Convert.ToString(_left.objectType) + "' & '" + Convert.ToString(_right.objectType) + "'");
@@ -2178,7 +2178,7 @@ namespace Lang.language
             _right = decider(_node.right);
             if (_left.objectType == ObjectType.NUMBER && _right.objectType == ObjectType.NUMBER)
             {
-                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue != 0 || ((LangNumber)_right).numberValue != 0), this);
+                return new LangNumber(Convert.ToInt32(((LangNumber)_left).numberValue.Value != 0 || ((LangNumber)_right).numberValue.Value != 0), this);
             }
             langManager.lastErrorToken = node.token;
             throw new InterpreterException("Invalid operation '" + Convert.ToString(_left.objectType) + "' | '" + Convert.ToString(_right.objectType) + "'");
@@ -2219,7 +2219,7 @@ namespace Lang.language
             LangNumber val = (LangNumber)decider(_node.right);
             try
             {
-                return new LangNumber(Math.Floor(((LangNumber)decider(_node.left).Divide(val)).numberValue), this);
+                return new LangNumber(Math.Floor((double)((LangNumber)decider(_node.left).Divide(val)).numberValue.Value), this);
             }
             catch (Exception)
             {
@@ -2325,16 +2325,16 @@ namespace Lang.language
                 LangNumber _right_num = (LangNumber)_right;
                 if (_left.objectType == ObjectType.STRING)
                 {
-                    if (((LangString)_left).stringValue.Length <= (int)_right_num.numberValue || (int)_right_num.numberValue < 0)
+                    if (((LangString)_left).stringValue.Value.Length <= (int)_right_num.numberValue.Value || (int)_right_num.numberValue.Value < 0)
                     {
                         langManager.lastErrorToken = node.token;
                         throw new InterpreterException("Line " + node.token.line + ": " + "String subscript out of bounds!");
                     }
-                    retobj = (LangObject)(new LangString("" + ((LangString)_left).stringValue[(int)_right_num.numberValue], this));
+                    retobj = (LangObject)(new LangString("" + ((LangString)_left).stringValue.Value[(int)_right_num.numberValue.Value], this));
                 }
                 else
                 {
-                    retobj = (LangObject)((LangMap)_left).arrayValue[_right_num.numberValue];
+                    retobj = (LangObject)((LangMap)_left).arrayValue.Value[_right_num.numberValue.Value];
                 }
             }
             else if (_right.objectType == ObjectType.STRING)
@@ -2345,7 +2345,7 @@ namespace Lang.language
                 }
                 else
                 {
-                    retobj = (LangObject)((LangMap)_left).arrayValue[((LangString)_right).stringValue];
+                    retobj = (LangObject)((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value];
                 }
             }
             if (retobj == null)
@@ -2354,11 +2354,11 @@ namespace Lang.language
                 {
                     if (_right.objectType == ObjectType.NUMBER)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangNumber)_right).numberValue] = new LangMap(new Hashtable(), this)));
+                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = new LangMap(new Hashtable(), this)));
                     }
                     else if (_right.objectType == ObjectType.STRING)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangString)_right).stringValue] = new LangMap(new Hashtable(), this)));
+                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = new LangMap(new Hashtable(), this)));
                     }
                 }
                 else
@@ -2367,11 +2367,11 @@ namespace Lang.language
                     {
                         if (_right.objectType == ObjectType.NUMBER)
                         {
-                            return ((LangObject)(((LangMap)_left).arrayValue[((LangNumber)_right).numberValue] = _val));
+                            return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
                         }
                         else if (_right.objectType == ObjectType.STRING)
                         {
-                            return ((LangObject)(((LangMap)_left).arrayValue[((LangString)_right).stringValue] = _val));
+                            return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val));
                         }
                     }
                 }
@@ -2382,22 +2382,22 @@ namespace Lang.language
                 {
                     if (_right.objectType == ObjectType.NUMBER)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangNumber)_right).numberValue] = _val));
+                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
                     }
 
                     else if (_right.objectType == ObjectType.STRING)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue[((LangString)_right).stringValue] = _val));
+                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val));
                     }
                 }
                 else if (_left.objectType == ObjectType.STRING)
                 {
-                    string inp = ((LangString)_left).stringValue;
+                    string inp = ((LangString)_left).stringValue.Value;
                     char[] x = inp.ToCharArray();
-                    x[(int)((LangNumber)_right).numberValue] = ((LangString)_val).stringValue[0];
+                    x[(int)((LangNumber)_right).numberValue.Value] = ((LangString)_val).stringValue.Value[0];
                     inp = new string(x);
-                    ((LangString)_left).stringValue = inp;
-                    return new LangString("" + ((LangString)_val).stringValue[0], this);
+                    ((LangString)_left).stringValue.Value = inp;
+                    return new LangString("" + ((LangString)_val).stringValue.Value[0], this);
                 }
             }
             return retobj;
@@ -2462,14 +2462,14 @@ namespace Lang.language
                 if (!isClass)
                 {
                     LangClass _left_ret_class = (LangClass)_left_ret;
-                    if (!_left_ret_class.vars.Contains(_right_ID.name))
+                    if (!_left_ret_class.vars.Value.Contains(_right_ID.name))
                     {
                         langManager.lastErrorToken = node.token;
                         throw new InterpreterException("Class '" + _left_ret_class.name + "' doesn't contain the member '" + _right_ID.name + "'");
                     }
                     if (_val != null)
                     {
-                        foreach (string mod in ((ArrayList)_left_ret_class.permissions[_right_ID.name]))
+                        foreach (string mod in ((ArrayList)_left_ret_class.permissions.Value[_right_ID.name]))
                         {
                             if (mod == "private" || mod == "readonly")
                             {
@@ -2480,11 +2480,11 @@ namespace Lang.language
                                 }
                             }
                         }
-                        return (LangObject)((_left_ret_class.vars[_right_ID.name]) = _val);
+                        return (LangObject)((_left_ret_class.vars.Value[_right_ID.name]) = _val);
                     }
                     if (_left.token.lexeme != "this")
                     {
-                        foreach (string mod in ((ArrayList)_left_ret_class.permissions[_right_ID.name]))
+                        foreach (string mod in ((ArrayList)_left_ret_class.permissions.Value[_right_ID.name]))
                         {
                             if (mod == "private")
                             {
@@ -2493,7 +2493,7 @@ namespace Lang.language
                             }
                         }
                     }
-                    return (LangObject)(_left_ret_class.vars[_right_ID.name]);
+                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name]);
                 }
                 else
                 {
@@ -2504,7 +2504,7 @@ namespace Lang.language
                     }
                     if (_val != null)
                     {
-                        if (lastCalledClass != null && lastCalledClass.name == stat.name)
+                        if (lastCalledClass != null && lastCalledClass.name.Value == stat.name)
                         {
                             return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
                         }
@@ -2521,7 +2521,7 @@ namespace Lang.language
                             return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
                         }
                     }
-                    if (lastCalledClass != null && lastCalledClass.name == stat.name)
+                    if (lastCalledClass != null && lastCalledClass.name.Value == stat.name)
                     {
                         return (LangObject)stat.staticMembers[_right_ID.name];
                     }
@@ -2545,12 +2545,12 @@ namespace Lang.language
                 if (!isClass)
                 {
                     LangClass _left_ret_class = (LangClass)_left_ret;
-                    if (!(_left_ret_class.methods.ContainsKey(_right_stat.name)))
+                    if (!(_left_ret_class.methods.Value.ContainsKey(_right_stat.name)))
                     {
                         langManager.lastErrorToken = _right.token;
                         throw new InterpreterException("Line " + _right.token.line + ": type '" + _left_ret_class.name + "' doesn't contain the method '" + _right_stat.name + "'");
                     }
-                    return RunClassFunction((ArrayList)(_left_ret_class.methods[_right_stat.name]), _right_stat, (LangClass)_left_ret , _left.token.lexeme == "this");
+                    return RunClassFunction((ArrayList)(_left_ret_class.methods.Value[_right_stat.name]), _right_stat, (LangClass)_left_ret, _left.token.lexeme == "this");
                 }
                 else
                 {
@@ -2725,7 +2725,7 @@ namespace Lang.language
                         }
                         else
                         {
-                            if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name == param.type))
+                            if (!(paramC.objectType == ObjectType.CLASS && ((LangClass)paramC).name.Value == param.type))
                             {
                                 works = false;
                                 break;
@@ -2799,7 +2799,7 @@ namespace Lang.language
             increaseLevel();
             ((Hashtable)table[level]).Clear();
             Hashtable newTable = new Hashtable();
-            foreach (DictionaryEntry dic in _first.vars)
+            foreach (DictionaryEntry dic in _first.vars.Value)
             {
                 newTable[dic.Key] = dic.Value;
             }
@@ -2859,14 +2859,37 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Cannot write to reserved keyword 'this'");
                 }
-                ((Hashtable)table[level])[((ID)_node.Id).name] = val.Clone();
+                if (node.token.type == TokenType.EQUAL)
+                {
+                    ((Hashtable)table[level])[((ID)_node.Id).name] = val.Clone();
+                }
+                else
+                {
+                    ((Hashtable)table[level])[((ID)_node.Id).name] = val;
+                }
             }
             else
             {
                 if (_node.Id.nodeType == NodeType.BRACKETS)
-                    BracketsInterpret(_node.Id, val.Clone());
+                {
+                    if (node.token.type == TokenType.EQUAL)
+                    {
+                        BracketsInterpret(_node.Id, val.Clone());
+                    }
+                    else
+                    {
+                        BracketsInterpret(_node.Id, val);
+                    }
+                }
                 if (_node.Id.nodeType == NodeType.DOT)
-                    DotInterpret(_node.Id, val.Clone());
+                    if (node.token.type == TokenType.EQUAL)
+                    {
+                        DotInterpret(_node.Id, val.Clone());
+                    }
+                    else
+                    {
+                        DotInterpret(_node.Id, val);
+                    }
             }
             foreach (BindStatement stat in _node.extras)
             {
@@ -2883,11 +2906,11 @@ namespace Lang.language
             string output = "";
             if (val.objectType == ObjectType.STRING)
             {
-                output = ((LangString)val).stringValue;
+                output = ((LangString)val).stringValue.Value;
             }
             else if (val.objectType == ObjectType.NUMBER)
             {
-                output = Convert.ToString(((LangNumber)val).numberValue);
+                output = Convert.ToString(((LangNumber)val).numberValue.Value);
             }
             if (consoleUI.IsDisposed)
             {
@@ -3146,7 +3169,7 @@ namespace Lang.language
                     }
                     else
                     {
-                        if (!(calcd.objectType == ObjectType.CLASS && ((LangClass)calcd).name == param.type))
+                        if (!(calcd.objectType == ObjectType.CLASS && ((LangClass)calcd).name.Value == param.type))
                         {
                             works = false;
                             break;
@@ -3168,7 +3191,7 @@ namespace Lang.language
             if (raise.objectType == ObjectType.STRING)
             {
                 langManager.lastErrorToken = node.token;
-                throw new InterpreterException("Line " + node.token.line + ": " + ((LangString)raise).stringValue);
+                throw new InterpreterException("Line " + node.token.line + ": " + ((LangString)raise).stringValue.Value);
             }
             else
             {
@@ -3188,7 +3211,7 @@ namespace Lang.language
             bool foundInIfs = false;
             foreach (IfData data in node.data)
             {
-                double d = ((LangNumber)decider(data.expr)).numberValue;
+                double d = ((LangNumber)decider(data.expr)).numberValue.Value;
                 if (d != 0)
                 {
                     LangObject ret = statListDecider(data.stats);
@@ -3217,7 +3240,7 @@ namespace Lang.language
             if (!keepWorking)
                 return new LangState("stop", this);
             ForStatement node = (ForStatement)node_;
-            for (statDecider(node.init_stat); ((LangNumber)decider(node.check_expr)).numberValue != 0; statDecider(node.inc_stat))
+            for (statDecider(node.init_stat); ((LangNumber)decider(node.check_expr)).numberValue.Value != 0; statDecider(node.inc_stat))
             {
                 LangObject val = statListDecider(node.stats);
                 if (val.objectType == ObjectType.STATE)
@@ -3239,7 +3262,7 @@ namespace Lang.language
             if (!keepWorking)
                 return new LangState("stop", this);
             WhileStatement node = (WhileStatement)node_;
-            while (((LangNumber)decider(node.check_expr)).numberValue != 0)
+            while (((LangNumber)decider(node.check_expr)).numberValue.Value != 0)
             {
                 LangObject val = statListDecider(node.stats);
                 if (val.objectType == ObjectType.STATE)

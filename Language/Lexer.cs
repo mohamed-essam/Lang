@@ -125,7 +125,6 @@ namespace Lang.language
             // --------------------------- Logical Operators
             reservedSpecialCharacters["<"] = TokenType.SMALLER;
             reservedSpecialCharacters[">"] = TokenType.GREATER;
-            reservedSpecialCharacters["="] = TokenType.EQUAL;
             reservedSpecialCharacters["!"] = TokenType.NOT;
             reservedSpecialCharacters[">="] = TokenType.GREATER_EQUAL;
             reservedSpecialCharacters["<="] = TokenType.SMALLER_EQUAL;
@@ -142,6 +141,8 @@ namespace Lang.language
             reservedSpecialCharacters[")"] = TokenType.R_PARA;
             reservedSpecialCharacters["["] = TokenType.L_BRACK;
             reservedSpecialCharacters["]"] = TokenType.R_BRACK;
+            reservedSpecialCharacters["="] = TokenType.EQUAL;
+            reservedSpecialCharacters["<<"] = TokenType.REF_EQUAL;
         }
 
         /// <summary>
@@ -208,22 +209,14 @@ namespace Lang.language
         {
             string tok = tok_ + "";
             string peek = peek_ + "";
-            if (peek == "/" && tok == peek)
+            if (reservedSpecialCharacters.ContainsKey(tok + peek))
             {
-                acceptToken(tok + "/", TokenType.DIV_INT, idx);
+                acceptToken(tok + peek, (TokenType)reservedSpecialCharacters[tok + peek]);
                 return 1;
             }
-            if (peek == "=")
+            else if (reservedSpecialCharacters.ContainsKey(tok))
             {
-                if (reservedSpecialCharacters.ContainsKey(tok + peek))
-                {
-                    acceptToken(tok + peek, (TokenType)reservedSpecialCharacters[tok + peek], idx);
-                    return 1;
-                }
-            }
-            if (reservedSpecialCharacters.ContainsKey(tok))
-            {
-                acceptToken(tok, (TokenType)reservedSpecialCharacters[tok], idx);
+                acceptToken(tok, (TokenType)reservedSpecialCharacters[tok]);
                 return 0;
             }
             langManager.lastErrorToken = new Token(tok_ + "", TokenType.AND, line, FileName, idx, idx + 1);

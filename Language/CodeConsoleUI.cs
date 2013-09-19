@@ -146,7 +146,7 @@ namespace Lang.Language
                 LangMap mp = ((LangMap)obj);
                 node.Text = "map";
                 SortedDictionary<Object, LangObject> sd = new SortedDictionary<object, LangObject>();
-                foreach (DictionaryEntry dic in mp.arrayValue)
+                foreach (DictionaryEntry dic in mp.arrayValue.Value)
                 {
                     sd.Add(dic.Key, (LangObject)dic.Value);
                 }
@@ -161,11 +161,11 @@ namespace Lang.Language
             else if (obj.objectType == ObjectType.CLASS)
             {
                 LangClass objcls = (LangClass)obj;
-                node.Text = objcls.name;
-                foreach (DictionaryEntry it in objcls.vars)
+                node.Text = objcls.name.Value;
+                foreach (DictionaryEntry it in objcls.vars.Value)
                 {
                     bool cont = false;
-                    foreach (string mod in ((ArrayList)objcls.permissions[it.Key]))
+                    foreach (string mod in ((ArrayList)objcls.permissions.Value[it.Key]))
                     {
                         if (mod == "private")
                         {

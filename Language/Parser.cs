@@ -1582,6 +1582,14 @@ namespace Lang.language
                 return null;
             move();
             Node node = dot_expr();
+            try
+            {
+                match(TokenType.EQUAL);
+            }
+            catch (ParserException)
+            {
+                match(TokenType.REF_EQUAL);
+            }
             Token _token = read();
             Node expr = expression();
             ArrayList extras = new ArrayList();
