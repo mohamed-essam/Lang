@@ -129,6 +129,21 @@ namespace Lang.Language
                     lastCallingThread.Resume();
                 }
             }
+            else if (e.KeyCode == Keys.Back)
+            {
+                if (consoleRTB.SelectionStart != consoleRTB.Text.Length)
+                {
+                    consoleRTB.SelectionStart = consoleRTB.Text.Length;
+                }
+                if (consoleRTB.Text[consoleRTB.Text.Length - 1] == '\n')
+                {
+                    e.SuppressKeyPress = true;
+                }
+            }
+            else
+            {
+                consoleRTB.SelectionStart = consoleRTB.Text.Length;
+            }
         }
 
         private void ViewVariables(TreeNode node, LangObject obj)

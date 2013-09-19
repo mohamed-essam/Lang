@@ -21,6 +21,7 @@ namespace Lang.language
         IMAGE
     }
 
+    #region LangObject
     public abstract class LangObject
     {
         public ObjectType objectType;
@@ -67,7 +68,9 @@ namespace Lang.language
 
         abstract public LangObject Clone();
     }
+    #endregion
 
+    #region LangNumber
     public class LangNumber : LangObject
     {
         public ValueContainer<double> numberValue;
@@ -163,7 +166,9 @@ namespace Lang.language
             return new LangNumber(numberValue.Value, handler);
         }
     }
+    #endregion
 
+    #region LangString
     public class LangString : LangObject
     {
         public ValueContainer<string> stringValue;
@@ -253,7 +258,9 @@ namespace Lang.language
             return new LangString(stringValue.Value, handler);
         }
     }
+    #endregion
 
+    #region LangMap
     public class LangMap : LangObject
     {
         public ValueContainer<Hashtable> arrayValue;
@@ -319,7 +326,9 @@ namespace Lang.language
             return new LangMap(arrVal, handler);
         }
     }
+    #endregion
 
+    #region LangState
     public class LangState : LangObject
     {
         public string message;
@@ -375,7 +384,9 @@ namespace Lang.language
             throw new InterpreterException();
         }
     }
+    #endregion
 
+    #region LangClass
     public class LangClass : LangObject
     {
         public ValueContainer<Hashtable> vars, methods;
@@ -617,7 +628,9 @@ namespace Lang.language
             }
         }
     }
+    #endregion
 
+    #region LangImage
     public class LangImage : LangObject
     {
         internal ValueContainer<Bitmap> imageValue;
@@ -679,4 +692,5 @@ namespace Lang.language
             throw new InterpreterException();
         }
     }
+#endregion
 }
