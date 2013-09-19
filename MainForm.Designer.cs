@@ -162,9 +162,9 @@
             // 
             this.Finder.BackColor = System.Drawing.SystemColors.ControlDark;
             this.Finder.DockTo = this.codeRTB;
-            this.Finder.Location = new System.Drawing.Point(201, 63);
+            this.Finder.Location = new System.Drawing.Point(199, 65);
             this.Finder.Name = "Finder";
-            this.Finder.Size = new System.Drawing.Size(182, 49);
+            this.Finder.Size = new System.Drawing.Size(197, 27);
             this.Finder.TabIndex = 12;
             this.Finder.Visible = false;
             // 
@@ -212,8 +212,8 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(394, 469);
             this.Controls.Add(this.Finder);
-            this.Controls.Add(this.LineNumberer);
             this.Controls.Add(this.codeRTB);
+            this.Controls.Add(this.LineNumberer);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.RunButton);

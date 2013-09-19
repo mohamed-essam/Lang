@@ -2299,7 +2299,7 @@ namespace Lang.language
         }
         #endregion
 
-        LangObject BracketsInterpret(Node node, LangObject _val, bool onlyOnNotFoundState = false)
+        LangObject BracketsInterpret(Node node, LangObject _val, Token eq_tok = null)
         {
             if (node.nodeType != NodeType.BRACKETS)
             {
@@ -2313,7 +2313,7 @@ namespace Lang.language
             BinaryOperator _node = (BinaryOperator)node;
             LangObject _left = null;
             if (_node.left.nodeType != NodeType.DOT)
-                _left = BracketsInterpret(_node.left, null, onlyOnNotFoundState);
+                _left = BracketsInterpret(_node.left, null);
             else if (_node.left.nodeType == NodeType.DOT)
             {
                 _left = DotInterpret(_node.left, null);
@@ -2367,47 +2367,166 @@ namespace Lang.language
                     {
                         if (_right.objectType == ObjectType.NUMBER)
                         {
-                            return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
+                            LangObject ret = ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]));
+                            if (eq_tok != null)
+                            {
+                                switch (eq_tok.type)
+                                {
+                                    case TokenType.EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = _val.Clone());
+                                    case TokenType.REF_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = _val);
+                                    case TokenType.PLUS_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Plus(_val));
+                                    case TokenType.MINUS_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Minus(_val));
+                                    case TokenType.DIV_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Divide(_val));
+                                    case TokenType.MUL_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Multiply(_val));
+                                    case TokenType.POW_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Pow(_val));
+                                    case TokenType.MOD_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Mod(_val));
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
+                            }
                         }
                         else if (_right.objectType == ObjectType.STRING)
                         {
-                            return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val));
+                            LangObject ret = ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]));
+                            if (eq_tok != null)
+                            {
+                                switch (eq_tok.type)
+                                {
+                                    case TokenType.EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = _val.Clone());
+                                    case TokenType.REF_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = _val);
+                                    case TokenType.PLUS_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Plus(_val));
+                                    case TokenType.MINUS_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Minus(_val));
+                                    case TokenType.DIV_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Divide(_val));
+                                    case TokenType.MUL_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Multiply(_val));
+                                    case TokenType.POW_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Pow(_val));
+                                    case TokenType.MOD_EQUAL:
+                                        return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Mod(_val));
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                return ((LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val)));
+                            }
                         }
                     }
                 }
             }
-            if (_val != null && !onlyOnNotFoundState)
+            else if (_val != null)
             {
                 if (_left.objectType == ObjectType.MAP)
                 {
                     if (_right.objectType == ObjectType.NUMBER)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
+                        LangObject ret = ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]));
+                        if (eq_tok != null)
+                        {
+                            switch (eq_tok.type)
+                            {
+                                case TokenType.EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = _val.Clone());
+                                case TokenType.REF_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = _val);
+                                case TokenType.PLUS_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Plus(_val));
+                                case TokenType.MINUS_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Minus(_val));
+                                case TokenType.DIV_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Divide(_val));
+                                case TokenType.MUL_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Multiply(_val));
+                                case TokenType.POW_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Pow(_val));
+                                case TokenType.MOD_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value]) = ret.Mod(_val));
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangNumber)_right).numberValue.Value] = _val));
+                        }
                     }
-
                     else if (_right.objectType == ObjectType.STRING)
                     {
-                        return ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val));
+                        LangObject ret = ((LangObject)(((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]));
+                        if (eq_tok != null)
+                        {
+                            switch (eq_tok.type)
+                            {
+                                case TokenType.EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = _val.Clone());
+                                case TokenType.REF_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = _val);
+                                case TokenType.PLUS_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Plus(_val));
+                                case TokenType.MINUS_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Minus(_val));
+                                case TokenType.DIV_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Divide(_val));
+                                case TokenType.MUL_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Multiply(_val));
+                                case TokenType.POW_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Pow(_val));
+                                case TokenType.MOD_EQUAL:
+                                    return (LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value]) = ret.Mod(_val));
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            return ((LangObject)((((LangMap)_left).arrayValue.Value[((LangString)_right).stringValue.Value] = _val)));
+                        }
                     }
                 }
                 else if (_left.objectType == ObjectType.STRING)
                 {
-                    string inp = ((LangString)_left).stringValue.Value;
-                    char[] x = inp.ToCharArray();
-                    x[(int)((LangNumber)_right).numberValue.Value] = ((LangString)_val).stringValue.Value[0];
-                    inp = new string(x);
-                    ((LangString)_left).stringValue.Value = inp;
-                    return new LangString("" + ((LangString)_val).stringValue.Value[0], this);
+                    if (eq_tok == null || eq_tok.type == TokenType.EQUAL)
+                    {
+                        string inp = ((LangString)_left).stringValue.Value;
+                        char[] x = inp.ToCharArray();
+                        x[(int)((LangNumber)_right).numberValue.Value] = ((LangString)_val).stringValue.Value[0];
+                        inp = new string(x);
+                        ((LangString)_left).stringValue.Value = inp;
+                        return new LangString("" + ((LangString)_val).stringValue.Value[0], this);
+                    }
+                    else
+                    {
+                        langManager.lastErrorToken = node.token;
+                        throw new InterpreterException("Cannot change the value of a character using any equal method else for '='");
+                    }
                 }
             }
             return retobj;
         }
         LangObject BracketsOperatorInterpret(Node node)
         {
-            return BracketsInterpret(node, null, true);
+            return BracketsInterpret(node, null, null);
         }
 
-        LangObject DotInterpret(Node node, LangObject _val)
+        LangObject DotInterpret(Node node, LangObject _val, Token eq_tok = null)
         {
             if (node.nodeType == NodeType.ID)
             {
@@ -2458,7 +2577,7 @@ namespace Lang.language
             Node _right = op.right;
             if (_right.nodeType == NodeType.ID)
             {
-                    ID _right_ID = (ID)_right;
+                ID _right_ID = (ID)_right;
                 if (!isClass)
                 {
                     LangClass _left_ret_class = (LangClass)_left_ret;
@@ -2478,6 +2597,31 @@ namespace Lang.language
                                     langManager.lastErrorToken = node.token;
                                     throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be changed because it's '" + mod + "'");
                                 }
+                            }
+                        }
+                        if (eq_tok != null)
+                        {
+                            LangObject ret = (LangObject)((_left_ret_class.vars.Value[_right_ID.name]));
+                            switch (eq_tok.type)
+                            {
+                                case TokenType.EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = _val.Clone());
+                                case TokenType.REF_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = _val);
+                                case TokenType.PLUS_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Plus(_val));
+                                case TokenType.MINUS_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Minus(_val));
+                                case TokenType.DIV_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Divide(_val));
+                                case TokenType.MUL_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Multiply(_val));
+                                case TokenType.POW_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Pow(_val));
+                                case TokenType.MOD_EQUAL:
+                                    return (LangObject)(_left_ret_class.vars.Value[_right_ID.name] = ret.Mod(_val));
+                                default:
+                                    break;
                             }
                         }
                         return (LangObject)((_left_ret_class.vars.Value[_right_ID.name]) = _val);
@@ -2506,6 +2650,31 @@ namespace Lang.language
                     {
                         if (lastCalledClass != null && lastCalledClass.name.Value == stat.name)
                         {
+                            if (eq_tok != null)
+                            {
+                                LangObject ret = (LangObject)((stat.staticMembers[_right_ID.name]));
+                                switch (eq_tok.type)
+                                {
+                                    case TokenType.EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = _val.Clone());
+                                    case TokenType.REF_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
+                                    case TokenType.PLUS_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Plus(_val));
+                                    case TokenType.MINUS_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Minus(_val));
+                                    case TokenType.DIV_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Divide(_val));
+                                    case TokenType.MUL_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Multiply(_val));
+                                    case TokenType.POW_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Pow(_val));
+                                    case TokenType.MOD_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Mod(_val));
+                                    default:
+                                        break;
+                                }
+                            }
                             return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
                         }
                         else
@@ -2516,6 +2685,31 @@ namespace Lang.language
                                 {
                                     langManager.lastErrorToken = node.token;
                                     throw new InterpreterException("Member '" + _right_ID.name + "' Cannot be accessed because it's '" + mod + "'");
+                                }
+                            }
+                            if (eq_tok != null)
+                            {
+                                LangObject ret = (LangObject)((stat.staticMembers[_right_ID.name]));
+                                switch (eq_tok.type)
+                                {
+                                    case TokenType.EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = _val.Clone());
+                                    case TokenType.REF_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
+                                    case TokenType.PLUS_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Plus(_val));
+                                    case TokenType.MINUS_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Minus(_val));
+                                    case TokenType.DIV_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Divide(_val));
+                                    case TokenType.MUL_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Multiply(_val));
+                                    case TokenType.POW_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Pow(_val));
+                                    case TokenType.MOD_EQUAL:
+                                        return (LangObject)(stat.staticMembers[_right_ID.name] = ret.Mod(_val));
+                                    default:
+                                        break;
                                 }
                             }
                             return (LangObject)(stat.staticMembers[_right_ID.name] = _val);
@@ -2859,37 +3053,42 @@ namespace Lang.language
                     langManager.lastErrorToken = node.token;
                     throw new InterpreterException("Line " + node.token.line + ": " + "Cannot write to reserved keyword 'this'");
                 }
-                if (node.token.type == TokenType.EQUAL)
+                switch (node.token.type)
                 {
-                    ((Hashtable)table[level])[((ID)_node.Id).name] = val.Clone();
-                }
-                else
-                {
-                    ((Hashtable)table[level])[((ID)_node.Id).name] = val;
+                    case TokenType.EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = val.Clone();
+                        break;
+                    case TokenType.REF_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = val;
+                        break;
+                    case TokenType.PLUS_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Plus(val);
+                        break;
+                    case TokenType.MINUS_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Minus(val);
+                        break;
+                    case TokenType.DIV_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Divide(val);
+                        break;
+                    case TokenType.MUL_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Multiply(val);
+                        break;
+                    case TokenType.POW_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Pow(val);
+                        break;
+                    case TokenType.MOD_EQUAL:
+                        ((Hashtable)table[level])[((ID)_node.Id).name] = ((LangObject)((Hashtable)table[level])[((ID)_node.Id).name]).Mod(val);
+                        break;
+                    default:
+                        break;
                 }
             }
             else
             {
                 if (_node.Id.nodeType == NodeType.BRACKETS)
-                {
-                    if (node.token.type == TokenType.EQUAL)
-                    {
-                        BracketsInterpret(_node.Id, val.Clone());
-                    }
-                    else
-                    {
-                        BracketsInterpret(_node.Id, val);
-                    }
-                }
+                    BracketsInterpret(_node.Id, val, node.token);
                 if (_node.Id.nodeType == NodeType.DOT)
-                    if (node.token.type == TokenType.EQUAL)
-                    {
-                        DotInterpret(_node.Id, val.Clone());
-                    }
-                    else
-                    {
-                        DotInterpret(_node.Id, val);
-                    }
+                    DotInterpret(_node.Id, val, node.token);
             }
             foreach (BindStatement stat in _node.extras)
             {

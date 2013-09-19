@@ -7,6 +7,7 @@ using System.Collections;
 
 namespace Lang.language
 {
+    #region Additional Classes
     internal class ParserException : LangException
     {
 
@@ -26,7 +27,6 @@ namespace Lang.language
 
         }
     }
-
 
     #region Node
     abstract public class Node : IDisposable
@@ -1025,6 +1025,7 @@ namespace Lang.language
 
     #endregion
     #endregion
+#endregion
 
     public class Parser
     {
@@ -1582,13 +1583,27 @@ namespace Lang.language
                 return null;
             move();
             Node node = dot_expr();
-            try
+            switch (lookAhead.type)
             {
-                match(TokenType.EQUAL);
-            }
-            catch (ParserException)
-            {
-                match(TokenType.REF_EQUAL);
+                case TokenType.EQUAL:
+                    break;
+                case TokenType.REF_EQUAL:
+                    break;
+                case TokenType.PLUS_EQUAL:
+                    break;
+                case TokenType.MINUS_EQUAL:
+                    break;
+                case TokenType.DIV_EQUAL:
+                    break;
+                case TokenType.MUL_EQUAL:
+                    break;
+                case TokenType.POW_EQUAL:
+                    break;
+                case TokenType.MOD_EQUAL:
+                    break;
+                default:
+                    match(TokenType.EQUAL);
+                    break;
             }
             Token _token = read();
             Node expr = expression();
@@ -1596,6 +1611,28 @@ namespace Lang.language
             while (isNext(TokenType.COMMA))
             {
                 Node node_ = factor();
+                switch (lookAhead.type)
+                {
+                    case TokenType.EQUAL:
+                        break;
+                    case TokenType.REF_EQUAL:
+                        break;
+                    case TokenType.PLUS_EQUAL:
+                        break;
+                    case TokenType.MINUS_EQUAL:
+                        break;
+                    case TokenType.DIV_EQUAL:
+                        break;
+                    case TokenType.MUL_EQUAL:
+                        break;
+                    case TokenType.POW_EQUAL:
+                        break;
+                    case TokenType.MOD_EQUAL:
+                        break;
+                    default:
+                        match(TokenType.EQUAL);
+                        break;
+                }
                 Token token_ = read();
                 Node expr_ = expression();
                 extras.Add(new BindStatement(node_, expr_, new ArrayList(), token_));

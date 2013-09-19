@@ -186,7 +186,13 @@ namespace Lang.language
         CONTINUE,
         NOT,
         MODIFIER,
-        REF_EQUAL
+        REF_EQUAL,
+        PLUS_EQUAL,
+        MINUS_EQUAL,
+        DIV_EQUAL,
+        MUL_EQUAL,
+        POW_EQUAL,
+        MOD_EQUAL
     }
 
     public class Token

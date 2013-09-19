@@ -142,7 +142,13 @@ namespace Lang.language
             reservedSpecialCharacters["["] = TokenType.L_BRACK;
             reservedSpecialCharacters["]"] = TokenType.R_BRACK;
             reservedSpecialCharacters["="] = TokenType.EQUAL;
-            reservedSpecialCharacters["<<"] = TokenType.REF_EQUAL;
+            reservedSpecialCharacters["+="] = TokenType.PLUS_EQUAL;
+            reservedSpecialCharacters["-="] = TokenType.MINUS_EQUAL;
+            reservedSpecialCharacters["/="] = TokenType.DIV_EQUAL;
+            reservedSpecialCharacters["*="] = TokenType.MUL_EQUAL;
+            reservedSpecialCharacters["^="] = TokenType.POW_EQUAL;
+            reservedSpecialCharacters["%="] = TokenType.MOD_EQUAL;
+
         }
 
         /// <summary>
