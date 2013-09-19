@@ -180,9 +180,9 @@ namespace Lang.language
             switch (other.objectType)
             {
                 case ObjectType.STRING:
-                    return new LangString(stringValue + ((LangString)other).stringValue.Value, handler);
+                    return new LangString(stringValue.Value + ((LangString)other).stringValue.Value, handler);
                 case ObjectType.NUMBER:
-                    return new LangString(stringValue + Convert.ToString(((LangNumber)other).numberValue.Value), handler);
+                    return new LangString(stringValue.Value + Convert.ToString(((LangNumber)other).numberValue.Value), handler);
                 default:
                     throw new InterpreterException("Invalid operation '" + Convert.ToString(this.objectType) + "' + '" + Convert.ToString(other.objectType) + "'");
             }
@@ -211,7 +211,7 @@ namespace Lang.language
                 LangNumber langNumber = (LangNumber)other;
                 for (int i = 0; i < langNumber.numberValue.Value; i++)
                 {
-                    _otherValue += stringValue;
+                    _otherValue += stringValue.Value;
                 }
                 return new LangString(_otherValue, handler);
             }

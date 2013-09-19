@@ -135,11 +135,11 @@ namespace Lang.Language
         {
             if (obj.objectType == ObjectType.NUMBER)
             {
-                node.Text = ((LangNumber)obj).numberValue + "";
+                node.Text = ((LangNumber)obj).numberValue.Value + "";
             }
             else if (obj.objectType == ObjectType.STRING)
             {
-                node.Text = "\"" + ((LangString)obj).stringValue + "\"";
+                node.Text = "\"" + ((LangString)obj).stringValue.Value + "\"";
             }
             else if (obj.objectType == ObjectType.MAP)
             {

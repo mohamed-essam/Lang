@@ -3083,12 +3083,13 @@ namespace Lang.language
                         break;
                 }
             }
+            else if (_node.Id.nodeType == NodeType.BRACKETS)
+                    BracketsInterpret(_node.Id, val, node.token);
+            else if (_node.Id.nodeType == NodeType.DOT)
+                DotInterpret(_node.Id, val, node.token);
             else
             {
-                if (_node.Id.nodeType == NodeType.BRACKETS)
-                    BracketsInterpret(_node.Id, val, node.token);
-                if (_node.Id.nodeType == NodeType.DOT)
-                    DotInterpret(_node.Id, val, node.token);
+                throw new InterpreterException("Left hand of assignment must be a variable");
             }
             foreach (BindStatement stat in _node.extras)
             {
